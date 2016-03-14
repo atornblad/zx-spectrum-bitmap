@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>ZX Spectrum bitmap</title>
+        <script src="zxsb.js"></script>
+    </head>
+    <body>
+        <script>
+            var bitmap = new ZX.Spectrum.Bitmap({
+                clear : 0
+            });
+            for (var i = 0; i < 6144; ++i) {
+                bitmap.data[i] = 0;
+            }
+            for (var i = 6144; i < 6912; ++i) {
+                bitmap.data[i] = 56;
+            }
+            bitmap.addEventListener('zxsb-move', function(e) {
+                if (!e.detail.id) return;
+                
+                if (e.detail.id == 'lmb') {
+                    bitmap.data[e.detail.bitmapIndex] |= e.detail.bit;
+                } else {
+                    bitmap.data[e.detail.bitmapIndex] &= (0xff ^ e.detail.bit);
+                }
+            });
+        </script>
+    </body>
+</html>
