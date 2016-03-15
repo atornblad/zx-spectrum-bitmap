@@ -3,25 +3,155 @@
     <head>
         <title>ZX Spectrum bitmap</title>
         <script src="zxsb.js"></script>
+        <link rel="stylesheet" href="zxsbdemo.css">
     </head>
     <body>
+        <button id="cls-test">CLS</button>
+        <button id="speed-test">Speed POKE</button>
+        <button id="plot-test">PLOT x 500</button>
+        <button id="line-test">LINE x 10</button>
+        <br>
+        <br>
+        <label for="ink">INK</label> <input type="number" min="0" max="7" value="0" id="ink"><br>
+        <label for="paper">PAPER</label> <input type="number" min="0" max="7" value="7" id="paper"><br>
+        <label for="bright">BRIGHT</label> <input type="number" min="0" max="1" value="0" id="bright"><br>
+        <label for="flash">FLASH</label> <input type="number" min="0" max="1" value="0" id="flash"><br>
+        <br>
+        <label for="poke-address">POKE</label> <input type="number" min="16384" max="23295" value="16384" id="poke-address">, <input type="number" min="0" max="255" value="0" id="poke-value"> <button id="poke">GO</button><br>
+        <label for="peek-address">PEEK</label> <input type="number" min="16384" max="23295" value="16384" id="peek-address"> <button id="peek">GO</button> <span class="output" id="peek-result">?</span><br>
+        <br>
+        <label for="save-filename">SAVE</label> "<input type="text" maxlength="10" style="width:10.5em" id="save-filename" value="javascript">" SCREEN$ <button id="save">GO</button><br>
+        <br>
         <script>
-            var bitmap = new ZX.Spectrum.Bitmap({
-                clear : 0
+            var bitmap = new ZX.Spectrum.Bitmap();
+            
+            var intervalId;
+            function stopInterval() {
+                if (intervalId) {
+                    window.clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+            
+            document.getElementById('speed-test').addEventListener('click', function() {
+                stopInterval();
+                intervalId = window.setInterval(function() {
+                    var time = (performance.now() % 31415) / 100;
+                    for (var i = time; i < time + 10; i += 0.01) {
+                        var radius = 50 + Math.sin(i * 0.25) * 37;
+                        
+                        var x = 128 + radius * Math.sin(i * i * 2);
+                        var y = 96 + radius * Math.cos(i * i * 2);
+                        
+                        var pointInfo = ZX.Spectrum.Bitmap.getPointInfo(x, y);
+                        bitmap.poke(pointInfo.bitmapAddress, bitmap.peek(pointInfo.bitmapAddress) | pointInfo.bit);
+                        bitmap.poke(pointInfo.attrAddress, 56);
+                    }
+                    
+                    for (var i = 0; i < 50; ++i) {
+                        var address = 16384 + (Math.random() * 6144) | 0;
+                        var data = bitmap.peek(address) ^ ((Math.random() * 256) | 0);
+                        
+                        bitmap.poke(address, data);
+                    }
+                    
+                    for (var i = 0; i < 10; ++i) {
+                        var address = 16384 + 6144 + (Math.random() * 768) | 0;
+                        var data = bitmap.peek(address) ^ ((Math.random() * 256) | 0);
+                        
+                        bitmap.poke(address, data);
+                    }
+                }, 1);
             });
-            for (var i = 0; i < 6144; ++i) {
-                bitmap.data[i] = 0;
-            }
-            for (var i = 6144; i < 6912; ++i) {
-                bitmap.data[i] = 56;
-            }
-            bitmap.addEventListener('zxsb-move', function(e) {
-                if (!e.detail.id) return;
+            
+            document.getElementById('plot-test').addEventListener('click', function() {
+                stopInterval();
+                for (var i = 0; i < 500; ++i) {
+                    var x = Math.random() * 256;
+                    var y = Math.random() * 192;
+                    bitmap.plot(x, y);
+                }
+            });
+            
+            document.getElementById('line-test').addEventListener('click', function() {
+                stopInterval();
+                for (var i = 0; i < 10; ++i) {
+                    var x1 = Math.random() * 256;
+                    var y1 = Math.random() * 192;
+                    var x2 = Math.random() * 256;
+                    var y2 = Math.random() * 192;
+                    bitmap.line(x1, y1, x2, y2);
+                }
+            });
+            
+            document.getElementById('cls-test').addEventListener('click', function() {
+                stopInterval();
+                bitmap.cls();
+            });
+            
+            document.getElementById('ink').addEventListener('change', function() {
+                bitmap.ink(this.value);
+            });
+            
+            document.getElementById('paper').addEventListener('change', function() {
+                bitmap.paper(this.value);
+            });
+            
+            document.getElementById('bright').addEventListener('change', function() {
+                bitmap.bright(this.value);
+            });
+            
+            document.getElementById('flash').addEventListener('change', function() {
+                bitmap.flash(this.value);
+            });
+            
+            document.getElementById('poke').addEventListener('click', function() {
+                bitmap.poke(document.getElementById('poke-address').value, document.getElementById('poke-value').value);
+            });
+            
+            document.getElementById('peek').addEventListener('click', function() {
+                document.getElementById('peek-result').textContent = bitmap.peek(document.getElementById('peek-address'));
+            });
+            
+            document.getElementById('save').addEventListener('click', function() {
+                var filename = document.getElementById('save-filename').value;
+                console.log(filename);
                 
-                if (e.detail.id == 'lmb') {
-                    bitmap.data[e.detail.bitmapIndex] |= e.detail.bit;
-                } else {
-                    bitmap.data[e.detail.bitmapIndex] &= (0xff ^ e.detail.bit);
+                var tapArray = new Uint8ClampedArray(25 + 6912);
+                tapArray[0] = 19;                                          // Length of block, two bytes
+                tapArray[1] = 0;
+                tapArray[2] = 0;                                           // Block type = header block
+                tapArray[3] = 3;                                           // File type = CODE
+                for (var i = 0; i < 10; ++i) {                             // Filename (10 bytes)
+                    var ascii = (i >= filename.length) ? 32 : filename.charCodeAt(i);
+                    if (ascii < 32 || ascii > 127) ascii = 63;
+                    tapArray[i + 4] = ascii;
+                }
+                tapArray[14] = (6912 & 0xff);                              // Length of data (2 bytes)
+                tapArray[15] = (6912 >> 8);
+                tapArray[16] = (16384 & 0xff);                             // Address of data (2 bytes)
+                tapArray[17] = (16384 >> 8);
+                tapArray[18] = 0;                                          // TAP parameter 2
+                tapArray[19] = 128;
+                tapArray[20] = (function() { var xor = 0; for (var i = 2; i <= 19; ++i) { xor ^= tapArray[i]; } return xor; })();
+                
+                tapArray[21] = (6912 + 2) & 0xff;
+                tapArray[22] = (6912 + 2) >> 8;
+                tapArray[23] = 0xff;
+                for (var j = 0; j < 6912; ++j) {
+                    tapArray[24 + j] = bitmap.peek(j + 16384);
+                }
+                tapArray[24 + 6912] = (function() { var xor = 0; for (var i = 23; i <= 23 + 6912; ++i) { xor ^= tapArray[i]; } return xor; })();
+                
+                var b64Encoded = btoa(String.fromCharCode.apply(null, tapArray));
+                var url = 'data:application/x-spectrum-tap;base64,' + b64Encoded;
+                var link = document.getElementById('download-link');
+                if (!link) {
+                    link = document.createElement('A');
+                    link.href = url;
+                    link.download = (filename || 'output') + '.tap';
+                    link.textContent = 'Click to download .TAP file';
+                    this.parentNode.insertBefore(link, this.nextSibling);
                 }
             });
         </script>

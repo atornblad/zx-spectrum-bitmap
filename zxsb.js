@@ -1,5 +1,14 @@
 (function() {
     
+    if (!('Proxy' in window)) {
+        window.setTimeout(function() {
+            document.documentElement.textContent = "I'm sorry, ZX.Spectrum.Bitmap needs support for EcmaScript 6 Proxy objects to work.";
+        }, 1);
+        return;
+    }
+    
+    var DEBUGOUTPUT = true;
+    
     var WIDTH = 256;
     var HEIGHT = 192;
     var BLOCKWIDTH = (WIDTH >> 3);
@@ -36,6 +45,28 @@
         return (offset & 0x00ff) | ((offset & 0x1800) >> 3);
     }
     
+    var getPointInfo = function(x, y) {
+        x &= 255;
+        y &= 255;
+        
+        if (y > 191) return null;
+        
+        var xBlock = x >> 3;
+        var yBlock = y >> 3;
+        
+        return {
+            "x" : x,
+            "y" : y,
+            "blockX" : xBlock,
+            "blockY" : yBlock,
+            "attrIndex" : 6144 + (xBlock | (yBlock << 5)),
+            "bitmapIndex" : xBlock | ((y & 0x0007) << 8) | ((y & 0x0038) << 2) | ((y & 0x00c0) << 5),
+            "attrAddress" : 16384 + 6144 + (xBlock | (yBlock << 5)),
+            "bitmapAddress" : 16384 + (xBlock | ((y & 0x0007) << 8) | ((y & 0x0038) << 2) | ((y & 0x00c0) << 5)),
+            "bit" : 0x80 >> (x & 7)
+        };
+    };
+    
     var $defaults = function(provided, defaults) {
         var output = {};
         
@@ -56,9 +87,9 @@
     
     var ZX = {};
     
-    ZX['Spectrum'] = {};
+    var Spectrum = ZX['Spectrum'] = {};
     
-    ZX['Spectrum']['Bitmap'] = function(options) {
+    var Bitmap = Spectrum['Bitmap'] = function Bitmap(options) {
         var i;
         
         var opts = $defaults(options, {
@@ -68,7 +99,7 @@
         
         var data = new Uint8ClampedArray(TOTALSIZE);
         
-        if ('clear' in opts) {
+        if ('clear' in opts && opts['clear'] !== false) {
             for (i = 0; i < TOTALSIZE; ++i) {
                 data[i] = opts['clear'];
             }
@@ -85,7 +116,7 @@
         
         for (i = 0; i < BLOCKWIDTH * BLOCKHEIGHT; ++i) dirty[i] = true;
         
-        this['data'] = new Proxy(data, {
+        var dataProxy = this['data'] = new Proxy(data, {
             "set" : function(target, property, value, receiver) {
                 if (property >= 0 && property < TOTALSIZE) {
                     data[property] = value;
@@ -113,6 +144,8 @@
         
         if (opts.target) {
             canvas = opts.target;
+            canvas.width = 256;
+            canvas.height = 192;
         } else {
             canvas = document.createElement('CANVAS');
             canvas.width = 256;
@@ -129,19 +162,21 @@
             flashPhase = (flashPhase + 1) & 0x3f;
             var flashChange = (flashPhase ^ lastFlashPhase) & 0x20;
             lastFlashPhase = flashPhase;
+            if (!(hasDirt || flashChange)) return;
             
             if (flashChange) {
-                hasDirt = true;
                 dirtMinBlock = 0;
                 dirtMaxBlock = BLOCKWIDTH * BLOCKHEIGHT;
             }
-            
-            if (!hasDirt) return;
             
             var imageData = context.getImageData(0, 0, 256, 192);
             var targetData = imageData.data;
             
             for (var dirtIndex = dirtMinBlock; dirtIndex <= dirtMaxBlock; ++dirtIndex) {
+                var attributeByte = data[dirtIndex + ATTROFFSET];
+                var flash = (attributeByte & 0x80);
+                if (!(flashChange && flash || hasDirt)) continue;
+                
                 var xBlockIndex = (dirtIndex & 0x1f);
                 var xLeft = (xBlockIndex << 3);
                 var yBlockIndexNotShifted = (dirtIndex & 0x1fe0);
@@ -155,10 +190,8 @@
 */                
                 var offsetFirst = xBlockIndex | (yBlockIndexNotShifted & 0x00e0) | ((yBlockIndexNotShifted & 0x0300) << 3);
                 
-                var attributeByte = data[dirtIndex + ATTROFFSET];
                 var ink = (attributeByte & 0x07) | ((attributeByte & 0x40) >> 3);
                 var paper = (attributeByte & 0x78) >> 3;
-                var flash = (attributeByte & 0x80);
                 if (flash && (flashPhase & 0x20)) {
                     var temp = ink;
                     ink = paper;
@@ -189,89 +222,129 @@
         this['refresh'] = refreshFunc;
         
         if (!opts['defer']) {
-            var func = function() {
-                refreshFunc();
-                window.requestAnimationFrame(func);
-            };
+            var func;
+            
+            if (DEBUGOUTPUT) {
+                var maxTime = 0.0;
+                var totalTime = 0.0;
+                var ticks = 0;
+                var nextTimeOutput = Date.now();
+                
+                func = function() {
+                    var started = performance.now();
+                    refreshFunc();
+                    var ended = performance.now();
+                    var timeTaken = ended - started;
+                    totalTime += timeTaken;
+                    ++ticks;
+                    if (timeTaken > maxTime && ticks > 2) maxTime = timeTaken; 
+                    var now = Date.now();
+                    if (now > nextTimeOutput) {
+                        console.log("Max time taken: " + maxTime.toFixed(1) + ", average time taken: " + (totalTime / ticks).toFixed(1));
+                        nextTimeOutput += 5000;
+                    }
+                    window.requestAnimationFrame(func);
+                };
+            } else {
+                func = function() {
+                    refreshFunc();
+                    window.requestAnimationFrame(func);
+                }
+            }
             func();
         }
         
-        var handlers = {};
+        var currentInk = 0;
+        var currentPaper = 7;
+        var currentBright = 0;
+        var currentFlash = 0;
+        var currentAttrValue = 56;
         
-        this['addEventListener'] = function(type, handler) {
-            if (!handlers[type]) handlers[type] = [];
-            handlers[type].push(handler);
+        this['poke'] = function(address, value) {
+            dataProxy[(address - 16384) & 0x1fff] = value & 255;
         };
         
-        this['removeEventListener'] = function(type, handler) {
-            if (!handlers[type]) return;
-            var newArray = handlers[type].filter(function(element, index, array) { return element !== handler; });
-            handlers[type] = newArray;
+        this['peek'] = function(address) {
+            if (address < 16384 || address >= 16384 + TOTALSIZE) return 0;
+            return data[(address - 16384) & 0x1fff];
         };
         
-        var leftMouseButtonDown = false;
-        var rightMouseButtonDown = false;
-        var middleMouseButtonDown = false;
+        this['ink'] = function(i) {
+            currentInk = i & 7;
+            currentAttrValue = currentAttrValue & 0xf8 | currentInk;
+        };
         
-        canvas.addEventListener('mousemove', (function(e) {
-            if (e.offsetX >= 0 && e.offsetX <= 255 && e.offsetY >= 0 && e.offsetY <= 191) {
-                if (handlers['zxsb-move']) {
-                    var x = e.offsetX;
-                    var y = e.offsetY;
-                    var xBlock = x >> 3;
-                    var yBlock = y >> 3;
-/*
-    Address: (x = block)
-    y7  y6 y2 y1 y0  y5 y4 y3 x4  x3 x2 x1 x0
- */                    
-                    var event = new CustomEvent('zxsb-move', { detail : {
-                        "id" : leftMouseButtonDown ? "lmb" :
-                               rightMouseButtonDown ? "rmb" :
-                               middleMouseButtonDown ? "mmb" :
-                               null,
-                        "clientX" : x,
-                        "clientY" : y,
-                        "blockX" : xBlock,
-                        "blockY" : yBlock,
-                        "attrIndex" : 6144 + (xBlock | (yBlock << 5)),
-                        "bitmapIndex" : xBlock | ((y & 0x0007) << 8) | ((y & 0x0038) << 2) | ((y & 0x00c0) << 5),
-                        "bit" : 0x80 >> (x & 7)
-                    }});
-                    handlers['zxsb-move'].forEach(function(handler) {
-                        handler.call(this, event);
-                    });
+        this['paper'] = function(p) {
+            currentPaper = p & 7;
+            currentAttrValue = currentAttrValue & 0xc7 | (currentPaper << 3)
+        };
+        
+        this['bright'] = function(b) {
+            currentBright = b & 1;
+            currentAttrValue = currentAttrValue & 0xbf | (currentBright << 6);
+        };
+        
+        this['flash'] = function(f) {
+            currentFlash = f & 1;
+            currentAttrValue = currentAttrValue & 0x7f | (currentFlash << 7);
+        };
+        
+        this['plot'] = function(x, y) {
+            var pointInfo = getPointInfo(x, y);
+            if (!pointInfo) return;
+            
+            dataProxy[pointInfo.attrIndex] = currentAttrValue;
+            dataProxy[pointInfo.bitmapIndex] |= pointInfo.bit;
+        };
+        
+        this['line'] = function(x1, y1, x2, y2) {
+            var dx = x2 - x1;
+            var dy = y2 - y1;
+            
+            if (dx == 0 && dy == 0) {
+                this['plot'](x1, y1);
+                return;
+            }
+            
+            var x, y;
+            if (Math.abs(dx) > Math.abs(dy)) {
+                // dx is bigger - go from x1 to x2 or from x2 to x1
+                var xstart = dx > 0 ? x1 : x2;
+                var xstop = x1 + x2 - xstart;
+                
+                for (x = xstart; x <= xstop; ++x) {
+                    y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
+                    this['plot'](x, y);
+                }
+            } else {
+                // dy is bigger - go from y1 to y2 or from y2 to y1
+                var ystart = dy > 0 ? y1 : y2;
+                var ystop = y1 + y2 - ystart;
+                for (y = ystart; y <= ystop; ++y) {
+                    x = (y - y1) / (y2 - y1) * (x2 - x1) + x1;
+                    this['plot'](x, y);
                 }
             }
-        }).bind(this));
+        };
         
-        canvas.addEventListener('mousedown', (function(e) {
-            switch (e.button) {
-                case 0:
-                    leftMouseButtonDown = true;
-                    break;
-                case 1:
-                    middleMouseButtonDown = true;
-                    break;
-                case 2:
-                    rightMouseButtonDown = true;
-                    break;
+        this['cls'] = function() {
+            var i = 0;
+            while (i < ATTROFFSET) {
+                data[i++] = 0;
             }
-        }).bind(this));
+            while (i < TOTALSIZE) {
+                data[i++] = currentAttrValue;
+            }
+            
+            dirtMinBlock = 0;
+            dirtMaxBlock = BLOCKWIDTH * BLOCKHEIGHT;
+            hasDirt = true;
+        };
         
-        canvas.addEventListener('mouseup', (function(e) {
-            switch (e.button) {
-                case 0:
-                    leftMouseButtonDown = false;
-                    break;
-                case 1:
-                    middleMouseButtonDown = false;
-                    break;
-                case 2:
-                    rightMouseButtonDown = false;
-                    break;
-            }
-        }).bind(this));
+        Spectrum['currentBitmap'] = this;
     };
+    
+    Bitmap['getPointInfo'] = getPointInfo;
     
     window.ZX = ZX;
     
