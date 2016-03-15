@@ -10,6 +10,7 @@
         <button id="speed-test">Speed POKE</button>
         <button id="plot-test">PLOT x 500</button>
         <button id="line-test">LINE x 10</button>
+        <button id="logotype-test">Logotype</button>
         <br>
         <br>
         <label for="ink">INK</label> <input type="number" min="0" max="7" value="0" id="ink"><br>
@@ -89,6 +90,119 @@
                 bitmap.cls();
             });
             
+            document.getElementById('logotype-test').addEventListener('click', function() {
+                var i, x, y;
+                
+                stopInterval();
+                bitmap.paper(7);
+                bitmap.ink(0);
+                bitmap.flash(0);
+                bitmap.bright(0);
+                bitmap.cls();
+                
+                for (var x = 6; x <= 25; ++x) {
+                    for (y = 4; y <= 19; ++y) {
+                        bitmap.poke(16384 + 6144 + 32 * y + x, (y <= 5) ? 64 : 120);
+                    }
+                }
+                
+                bitmap.line(47, 31, 208, 31);
+                bitmap.line(47, 31, 47, 160);
+                bitmap.line(208, 31, 208, 160);
+                bitmap.line(47, 160, 208, 160);
+                
+                bitmap.bright(1);
+                bitmap.line(48, 48, 207, 48);
+                
+                bitmap.bright(1);
+                bitmap.paper(0);
+                bitmap.ink(2);
+                for (y = 1; y <= 7; ++y) {
+                    bitmap.line(168 - y, y + 32, 167, y + 32);
+                    bitmap.line(160 - y, y + 40, 159, y + 40);
+                }
+                
+                bitmap.paper(2);
+                bitmap.ink(6);
+                for (y = 1; y <= 7; ++y) {
+                    bitmap.line(176 - y, y + 32, 175, y + 32);
+                    bitmap.line(168 - y, y + 40, 167, y + 40);
+                }
+                
+                bitmap.paper(6);
+                bitmap.ink(4);
+                for (y = 1; y <= 7; ++y) {
+                    bitmap.line(184 - y, y + 32, 183, y + 32);
+                    bitmap.line(176 - y, y + 40, 175, y + 40);
+                }
+                
+                bitmap.paper(4);
+                bitmap.ink(5);
+                for (y = 1; y <= 7; ++y) {
+                    bitmap.line(192 - y, y + 32, 191, y + 32);
+                    bitmap.line(184 - y, y + 40, 183, y + 40);
+                }
+                
+                bitmap.paper(0);
+                bitmap.ink(5);
+                for (y = 0; y <= 7; ++y) {
+                    bitmap.line(192, y + 32, 199 - y, y + 32);
+                    bitmap.line(184, y + 40, 191 - y, y + 40);
+                }
+                
+                bitmap.ink(2);
+                bitmap.bright(0);
+                var lines = [
+                    [0, 16, 3, 33, 3, 17, 3],
+                    [0, 52, 3],
+                    [15, 1, 3, 1, 15, 1, 15, 1, 3, 1, 15, 1, 3, 1, 15],
+                    [3, 13, 3, 1, 3, 9, 3, 1, 3, 13, 3, 13, 3, 1, 3, 1, 3],
+                    [15, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 15, 1, 3, 1, 3],
+                    [0, 12, 3, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 3, 9, 3, 1, 3, 1, 3],
+                    [15, 1, 3, 1, 3, 9, 3, 1, 15, 1, 3, 1, 15, 1, 3, 1, 3]
+                ];
+                for (y = 32; y <= 46; ++y) {
+                    var line = lines[(((y % 4) == 3) ? (y >> 1) : (y >> 2) << 1) - 16];
+                    x = 52;
+                    for (i = 0; i < line.length; i += 2) {
+                        if (line[i]) {
+                            bitmap.line(x, y, x + line[i] - 1, y);
+                        }
+                        x += (line[i] + line[i + 1]);
+                    }
+                }
+                
+                bitmap.paper(7);
+                bitmap.bright(0);
+                for (i = 0; i <= 125; i += 5) {
+                    bitmap.ink(1);
+                    bitmap.line(i, 0, 0, 125 - i);
+                    bitmap.ink(2);
+                    bitmap.line(255 - i, 191, 255, i + 66);
+                }
+                
+                bitmap.ink(3);
+                bitmap.bright(1);
+                i = 0;
+                var liner = function() {
+                    x = 128 + 30 * Math.sin(i / 100) + 20 * Math.sin(i / 31 + 1);
+                    y = 106 + 30 * Math.cos(i / 100) + 20 * Math.cos(i / 43 + 1);
+                    bitmap.plot(x, y);
+                    
+                    ++i;
+                    if (i < 1200) {
+                        window.setTimeout(liner, 1);
+                    } else {
+                        bitmap.ink(document.getElementById('ink').value);
+                        bitmap.paper(document.getElementById('paper').value);
+                        bitmap.bright(document.getElementById('bright').value);
+                        bitmap.flash(document.getElementById('flash').value);
+                    }
+                };
+                
+                liner();
+            });
+            
             document.getElementById('ink').addEventListener('change', function() {
                 bitmap.ink(this.value);
             });
@@ -148,9 +262,15 @@
                 var link = document.getElementById('download-link');
                 if (!link) {
                     link = document.createElement('A');
+                    link.id = 'download-link';
                     link.href = url;
                     link.download = (filename || 'output') + '.tap';
                     link.textContent = 'Click to download .TAP file';
+                    link.addEventListener('click', function() {
+                        window.setTimeout(function() {
+                            link.parentNode.removeChild(link);
+                        }, 1000);
+                    });
                     this.parentNode.insertBefore(link, this.nextSibling);
                 }
             });
