@@ -1,5 +1,12 @@
 (function() {
     
+    if (!('Uint8ClampedArray' in window)) {
+        window.setTimeout(function() {
+            document.documentElement.textContent = "I'm sorry, ZX.Spectrum.Bitmap needs support for Uint8ClampedArray to work.";
+        }, 1);
+        return;
+    }
+    
     if (!('Proxy' in window)) {
         window.setTimeout(function() {
             document.documentElement.textContent = "I'm sorry, ZX.Spectrum.Bitmap needs support for EcmaScript 6 Proxy objects to work.";
@@ -109,7 +116,7 @@
             }
         }
         
-        var dirty = new Array(BLOCKWIDTH * BLOCKHEIGHT);
+        var dirty = new Uint8Array(BLOCKWIDTH * BLOCKHEIGHT);
         var hasDirt = true;
         var dirtMinBlock = 0;
         var dirtMaxBlock = ATTROFFSET - 1;
@@ -122,13 +129,16 @@
                     data[property] = value;
                     
                     var dirtIndex;
+                    
                     if (property >= ATTROFFSET) {
+                        // the index is inside the color attribute part
                         dirtIndex = property - ATTROFFSET;
                     } else {
+                        // the index is inside the bitmap part
                         dirtIndex = blockIndexFromOffset(property);
                     }
                     
-                    dirty[dirtIndex] = true;
+                    dirty[dirtIndex] = 1;
                     if (dirtIndex < dirtMinBlock) dirtMinBlock = dirtIndex;
                     if (dirtIndex > dirtMaxBlock) dirtMaxBlock = dirtIndex;
                     
@@ -136,6 +146,8 @@
                     
                     return true;
                 }
+                
+                // Not a numeric index inside the boundaries
                 return false;
             }
         });
@@ -175,7 +187,9 @@
             for (var dirtIndex = dirtMinBlock; dirtIndex <= dirtMaxBlock; ++dirtIndex) {
                 var attributeByte = data[dirtIndex + ATTROFFSET];
                 var flash = (attributeByte & 0x80);
-                if (!(flashChange && flash || hasDirt)) continue;
+                if (!(flashChange && flash || (hasDirt && dirty[dirtIndex]))) continue;
+                
+                dirty[dirtIndex] = 0;
                 
                 var xBlockIndex = (dirtIndex & 0x1f);
                 var xLeft = (xBlockIndex << 3);
@@ -297,6 +311,14 @@
             dataProxy[pointInfo.bitmapIndex] |= pointInfo.bit;
         };
         
+        this['unplot'] = function(x, y) {
+            var pointInfo = getPointInfo(x, y);
+            if (!pointInfo) return;
+            
+            dataProxy[pointInfo.attrIndex] = currentAttrValue;
+            dataProxy[pointInfo.bitmapIndex] &= (0xff ^ pointInfo.bit);
+        };
+        
         this['line'] = function(x1, y1, x2, y2) {
             var dx = x2 - x1;
             var dy = y2 - y1;
@@ -320,6 +342,7 @@
                 // dy is bigger - go from y1 to y2 or from y2 to y1
                 var ystart = dy > 0 ? y1 : y2;
                 var ystop = y1 + y2 - ystart;
+                
                 for (y = ystart; y <= ystop; ++y) {
                     x = (y - y1) / (y2 - y1) * (x2 - x1) + x1;
                     this['plot'](x, y);
@@ -330,10 +353,10 @@
         this['cls'] = function() {
             var i = 0;
             while (i < ATTROFFSET) {
-                data[i++] = 0;
+                dataProxy[i++] = 0;
             }
             while (i < TOTALSIZE) {
-                data[i++] = currentAttrValue;
+                dataProxy[i++] = currentAttrValue;
             }
             
             dirtMinBlock = 0;

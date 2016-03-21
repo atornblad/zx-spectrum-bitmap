@@ -6,6 +6,9 @@
         <link rel="stylesheet" href="zxsbdemo.css">
     </head>
     <body>
+        <div>
+            <canvas width="256" height="192" id="theCanvas"></canvas>
+        </div>
         <button id="cls-test">CLS</button>
         <button id="speed-test">Speed POKE</button>
         <button id="plot-test">PLOT x 500</button>
@@ -24,7 +27,7 @@
         <label for="save-filename">SAVE</label> "<input type="text" maxlength="10" style="width:10.5em" id="save-filename" value="javascript">" SCREEN$ <button id="save">GO</button><br>
         <br>
         <script>
-            var bitmap = new ZX.Spectrum.Bitmap();
+            var bitmap = new ZX.Spectrum.Bitmap({target : document.getElementById('theCanvas')});
             
             var intervalId;
             function stopInterval() {
