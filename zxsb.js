@@ -92,9 +92,9 @@
     var colorTable = [0, 0, 0, 0, 0, 205, 205, 0, 0, 205, 0, 205, 0, 205, 0, 0, 205, 205, 205, 205, 0, 205, 205, 205, 
                       0, 0, 0, 0, 0, 255, 255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255, 255, 255];
     
-    var ZX = {};
+    var ZX = window['ZX'] || {};
     
-    var Spectrum = ZX['Spectrum'] = {};
+    var Spectrum = ZX['Spectrum'] = ZX['Spectrum'] || {};
     
     var Bitmap = Spectrum['Bitmap'] = function Bitmap(options) {
         var i;
@@ -273,6 +273,8 @@
         var currentBright = 0;
         var currentFlash = 0;
         var currentAttrValue = 56;
+        var lastPlotX = 0;
+        var lastPlotY = 0;
         
         this['poke'] = function(address, value) {
             dataProxy[(address - 16384) & 0x1fff] = value & 255;
@@ -309,6 +311,9 @@
             
             dataProxy[pointInfo.attrIndex] = currentAttrValue;
             dataProxy[pointInfo.bitmapIndex] |= pointInfo.bit;
+            
+            lastPlotX = x;
+            lastPlotY = y;
         };
         
         this['unplot'] = function(x, y) {
@@ -317,6 +322,9 @@
             
             dataProxy[pointInfo.attrIndex] = currentAttrValue;
             dataProxy[pointInfo.bitmapIndex] &= (0xff ^ pointInfo.bit);
+            
+            lastPlotX = x;
+            lastPlotY = y;
         };
         
         this['line'] = function(x1, y1, x2, y2) {
@@ -348,6 +356,13 @@
                     this['plot'](x, y);
                 }
             }
+            
+            lastPlotX = x2;
+            lastPlotY = y2;
+        };
+        
+        this['draw'] = function(x, y) {
+            this['line'](lastPlotX, lastPlotY, lastPlotX + x, lastPlotY + y);
         };
         
         this['cls'] = function() {
