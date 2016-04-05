@@ -14,6 +14,7 @@
         <select id="demos">
             <option>Select a demo...</option>
             <option value="reset">RESET</option>
+            <option value="colours">COLOURS</option>
             <option value="logo">LOGO</option>
         </select>
         <br>
@@ -319,6 +320,14 @@
  60 NEXT i
  70 INK 0: PAPER 7: BRIGHT 0: FLASH 0
  80 CLS</script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-colours">10 PAPER 7: CLS
+20 FOR x = 2 TO 252 STEP 9
+30   FOR y = 7 TO 187 STEP 9
+35     INK x: PAPER y
+40     PLOT x, y: DRAW 1, 1
+50   NEXT y
+60 NEXT x</script>
         
         <script type="text/x-zx-spectrum-basic" id="demo-logo"> 10 INK 0: PAPER 0: BRIGHT 0: FLASH 0
  20 CLS
