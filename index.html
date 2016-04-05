@@ -4,55 +4,13 @@
         <title>ZX Spectrum bitmap</title>
         <script src="zxsb.js"></script>
         <script src="zxbasic.js"></script>
-<<<<<<< HEAD
-=======
         <script src="demos.js"></script>
->>>>>>> refs/remotes/origin/master
         <link rel="stylesheet" href="zxsbdemo.css">
     </head>
     <body>
         <div>
             <canvas width="256" height="192" id="theCanvas"></canvas>
         </div>
-<<<<<<< HEAD
-        <textarea id="source-code">10 INK 0: PAPER 0: BRIGHT 0: FLASH 0
-20 CLS
-30 INK 6: PAPER 1
-40 PLOT 8, 8: DRAW 239, 0: DRAW 0, 175: DRAW -239, 0: DRAW 0, -175
-41 PLOT 9, 9: DRAW 237, 0: DRAW 0, 173: DRAW -237, 0: DRAW 0, -173
-50 INK 5: PAPER 2
-60 PLOT 16, 16: DRAW 223, 0: DRAW 0, 159: DRAW -223, 0: DRAW 0, -159
-61 PLOT 18, 18: DRAW 219, 0: DRAW 0, 155: DRAW -219, 0: DRAW 0, -155
-70 PAPER 0: INK 2: BRIGHT 1
-80 PLOT 159, 48
-81 PLOT 158, 49: DRAW 1, 0
-82 PLOT 157, 50: DRAW 2, 0
-83 PLOT 156, 51: DRAW 3, 0
-84 PLOT 155, 52: DRAW 4, 0
-85 PLOT 154, 53: DRAW 5, 0
-86 PLOT 153, 54: DRAW 6, 0
-87 PLOT 152, 55: DRAW 7, 0
-90 PAPER 6
-100 PLOT 160, 48: DRAW 6, 0
-101 PLOT 160, 49: DRAW 5, 0
-102 PLOT 160, 50: DRAW 4, 0
-103 PLOT 160, 51: DRAW 3, 0
-104 PLOT 160, 52: DRAW 2, 0
-105 PLOT 160, 53: DRAW 1, 0
-106 PLOT 160, 54
-110 INK 4
-120 PLOT 175, 48
-121 PLOT 174, 49: DRAW 1, 0
-122 PLOT 173, 50: DRAW 2, 0
-123 PLOT 172, 51: DRAW 3, 0
-124 PLOT 171, 52: DRAW 4, 0
-125 PLOT 170, 53: DRAW 5, 0
-126 PLOT 169, 54: DRAW 6, 0
-127 PLOT 168, 55: DRAW 7, 0
-</textarea>
-        <br>
-        <button id="run">RUN</button>
-=======
         <select id="demos">
             <option>Select a demo...</option>
         </select>
@@ -68,7 +26,6 @@
         <button id="run-instant">RUN</button>
         <button id="run-slow">RUN SLOW</button>
         <button id="run-fast">RUN FAST</button>
->>>>>>> refs/remotes/origin/master
         <br>
         <!--
         <button id="cls-test">CLS</button>
@@ -92,10 +49,6 @@
         <script>
             var bitmap = new ZX.Spectrum.Bitmap({target : document.getElementById('theCanvas')});
             
-<<<<<<< HEAD
-            document.getElementById('run').addEventListener('click', function() {
-                ZX.Spectrum.Basic.run(document.getElementById('source-code').value);
-=======
             document.addEventListener('DOMContentLoaded', function() {
                 var demos = document.getElementById('demos');
                 var demoScripts = document.querySelectorAll('script');
@@ -125,7 +78,6 @@
                         document.getElementById('source-code').value = script.textContent;
                     }
                 });
->>>>>>> refs/remotes/origin/master
             });
             
             /*
