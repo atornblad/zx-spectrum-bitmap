@@ -3,12 +3,26 @@
     <head>
         <title>ZX Spectrum bitmap</title>
         <script src="zxsb.js"></script>
+        <script src="zxbasic.js"></script>
+        <script src="demos.js"></script>
         <link rel="stylesheet" href="zxsbdemo.css">
     </head>
     <body>
         <div>
             <canvas width="256" height="192" id="theCanvas"></canvas>
         </div>
+        <select id="demos">
+            <option>Select a demo...</option>
+            <option value="reset">RESET</option>
+            <option value="logo">LOGO</option>
+        </select>
+        <br>
+        <textarea id="source-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"></textarea>
+        <br>
+        <button id="run">RUN</button>
+        <button id="run-fast">RUN FAST</button>
+        <br>
+        <!--
         <button id="cls-test">CLS</button>
         <button id="speed-test">Speed POKE</button>
         <button id="plot-test">PLOT x 500</button>
@@ -24,11 +38,28 @@
         <label for="poke-address">POKE</label> <input type="number" min="16384" max="23295" value="16384" id="poke-address">, <input type="number" min="0" max="255" value="0" id="poke-value"> <button id="poke">GO</button><br>
         <label for="peek-address">PEEK</label> <input type="number" min="16384" max="23295" value="16384" id="peek-address"> <button id="peek">GO</button> <span class="output" id="peek-result">?</span><br>
         <br>
+        -->
         <label for="save-filename">SAVE</label> "<input type="text" maxlength="10" style="width:10.5em" id="save-filename" value="javascript">" SCREEN$ <button id="save">GO</button><br>
         <br>
         <script>
             var bitmap = new ZX.Spectrum.Bitmap({target : document.getElementById('theCanvas')});
             
+            document.getElementById('run').addEventListener('click', function() {
+                ZX.Spectrum.Basic.run(document.getElementById('source-code').value);
+            });
+            
+            document.getElementById('run-fast').addEventListener('click', function() {
+                ZX.Spectrum.Basic.run(document.getElementById('source-code').value, 50);
+            });
+            
+            document.getElementById('demos').addEventListener('change', function() {
+                var script = document.getElementById('demo-' + this.value);
+                if (script) {
+                    document.getElementById('source-code').value = script.textContent;
+                }
+            });
+            
+            /*
             var intervalId;
             function stopInterval() {
                 if (intervalId) {
@@ -277,6 +308,69 @@
                     this.parentNode.insertBefore(link, this.nextSibling);
                 }
             });
+            */
         </script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-reset"> 10 FOR i = 16384 TO 65535
+ 20 POKE i, 2
+ 30 NEXT i
+ 40 FOR i = 65535 TO 16384 STEP -1
+ 50 POKE i, 0
+ 60 NEXT i
+ 70 INK 0: PAPER 7: BRIGHT 0: FLASH 0
+ 80 CLS</script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-logo"> 10 INK 0: PAPER 0: BRIGHT 0: FLASH 0
+ 20 CLS
+ 30 INK 6: PAPER 1
+ 40 PLOT 8, 8: DRAW 239, 0: DRAW 0, 175: DRAW -239, 0: DRAW 0, -175
+ 41 PLOT 9, 9: DRAW 237, 0: DRAW 0, 173: DRAW -237, 0: DRAW 0, -173
+ 50 INK 5: PAPER 2
+ 60 PLOT 16, 16: DRAW 223, 0: DRAW 0, 159: DRAW -223, 0: DRAW 0, -159
+ 61 PLOT 18, 18: DRAW 219, 0: DRAW 0, 155: DRAW -219, 0: DRAW 0, -155
+ 70 PAPER 0: INK 2: BRIGHT 1
+ 80 PLOT 159, 48
+ 81 PLOT 158, 49: DRAW 1, 0
+ 82 PLOT 157, 50: DRAW 2, 0
+ 83 PLOT 156, 51: DRAW 3, 0
+ 84 PLOT 155, 52: DRAW 4, 0
+ 85 PLOT 154, 53: DRAW 5, 0
+ 86 PLOT 153, 54: DRAW 6, 0
+ 87 PLOT 152, 55: DRAW 7, 0
+ 90 PAPER 6
+100 PLOT 160, 48: DRAW 6, 0
+101 PLOT 160, 49: DRAW 5, 0
+102 PLOT 160, 50: DRAW 4, 0
+103 PLOT 160, 51: DRAW 3, 0
+104 PLOT 160, 52: DRAW 2, 0
+105 PLOT 160, 53: DRAW 1, 0
+106 PLOT 160, 54
+110 INK 4
+120 PLOT 175, 48
+121 PLOT 174, 49: DRAW 1, 0
+122 PLOT 173, 50: DRAW 2, 0
+123 PLOT 172, 51: DRAW 3, 0
+124 PLOT 171, 52: DRAW 4, 0
+125 PLOT 170, 53: DRAW 5, 0
+126 PLOT 169, 54: DRAW 6, 0
+127 PLOT 168, 55: DRAW 7, 0
+130 PAPER 5
+140 PLOT 176, 48: DRAW 6, 0
+141 PLOT 176, 49: DRAW 5, 0
+142 PLOT 176, 50: DRAW 4, 0
+143 PLOT 176, 51: DRAW 3, 0
+144 PLOT 176, 52: DRAW 2, 0
+145 PLOT 176, 53: DRAW 1, 0
+146 PLOT 176, 54
+150 PAPER 0: INK 5
+160 PLOT 184, 48: DRAW 6, 0
+161 PLOT 184, 49: DRAW 5, 0
+162 PLOT 184, 50: DRAW 4, 0
+163 PLOT 184, 51: DRAW 3, 0
+164 PLOT 184, 52: DRAW 2, 0
+165 PLOT 184, 53: DRAW 1, 0
+166 PLOT 184, 54
+199 STOP
+200 CLS</script>
     </body>
 </html>

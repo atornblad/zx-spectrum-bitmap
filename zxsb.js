@@ -92,9 +92,9 @@
     var colorTable = [0, 0, 0, 0, 0, 205, 205, 0, 0, 205, 0, 205, 0, 205, 0, 0, 205, 205, 205, 205, 0, 205, 205, 205, 
                       0, 0, 0, 0, 0, 255, 255, 0, 0, 255, 0, 255, 0, 255, 0, 0, 255, 255, 255, 255, 0, 255, 255, 255];
     
-    var ZX = {};
+    var ZX = window['ZX'] || {};
     
-    var Spectrum = ZX['Spectrum'] = {};
+    var Spectrum = ZX['Spectrum'] = ZX['Spectrum'] || {};
     
     var Bitmap = Spectrum['Bitmap'] = function Bitmap(options) {
         var i;
@@ -273,6 +273,8 @@
         var currentBright = 0;
         var currentFlash = 0;
         var currentAttrValue = 56;
+        var lastPlotX = 0;
+        var lastPlotY = 0;
         
         this['poke'] = function(address, value) {
             dataProxy[(address - 16384) & 0x1fff] = value & 255;
@@ -309,6 +311,9 @@
             
             dataProxy[pointInfo.attrIndex] = currentAttrValue;
             dataProxy[pointInfo.bitmapIndex] |= pointInfo.bit;
+            
+            lastPlotX = x;
+            lastPlotY = y;
         };
         
         this['unplot'] = function(x, y) {
@@ -317,6 +322,9 @@
             
             dataProxy[pointInfo.attrIndex] = currentAttrValue;
             dataProxy[pointInfo.bitmapIndex] &= (0xff ^ pointInfo.bit);
+            
+            lastPlotX = x;
+            lastPlotY = y;
         };
         
         this['line'] = function(x1, y1, x2, y2) {
@@ -336,7 +344,7 @@
                 
                 for (x = xstart; x <= xstop; ++x) {
                     y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
-                    this['plot'](x, y);
+                    this['plot'](Math.round(x), Math.round(y));
                 }
             } else {
                 // dy is bigger - go from y1 to y2 or from y2 to y1
@@ -345,9 +353,16 @@
                 
                 for (y = ystart; y <= ystop; ++y) {
                     x = (y - y1) / (y2 - y1) * (x2 - x1) + x1;
-                    this['plot'](x, y);
+                    this['plot'](Math.round(x), Math.round(y));
                 }
             }
+            
+            lastPlotX = x2;
+            lastPlotY = y2;
+        };
+        
+        this['draw'] = function(x, y) {
+            this['line'](lastPlotX, lastPlotY, lastPlotX + x, lastPlotY + y);
         };
         
         this['cls'] = function() {
