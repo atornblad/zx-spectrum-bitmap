@@ -344,7 +344,7 @@
                 
                 for (x = xstart; x <= xstop; ++x) {
                     y = (x - x1) / (x2 - x1) * (y2 - y1) + y1;
-                    this['plot'](x, y);
+                    this['plot'](Math.round(x), Math.round(y));
                 }
             } else {
                 // dy is bigger - go from y1 to y2 or from y2 to y1
@@ -353,7 +353,7 @@
                 
                 for (y = ystart; y <= ystop; ++y) {
                     x = (y - y1) / (y2 - y1) * (x2 - x1) + x1;
-                    this['plot'](x, y);
+                    this['plot'](Math.round(x), Math.round(y));
                 }
             }
             

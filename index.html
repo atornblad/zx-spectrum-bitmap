@@ -4,12 +4,17 @@
         <title>ZX Spectrum bitmap</title>
         <script src="zxsb.js"></script>
         <script src="zxbasic.js"></script>
+<<<<<<< HEAD
+=======
+        <script src="demos.js"></script>
+>>>>>>> refs/remotes/origin/master
         <link rel="stylesheet" href="zxsbdemo.css">
     </head>
     <body>
         <div>
             <canvas width="256" height="192" id="theCanvas"></canvas>
         </div>
+<<<<<<< HEAD
         <textarea id="source-code">10 INK 0: PAPER 0: BRIGHT 0: FLASH 0
 20 CLS
 30 INK 6: PAPER 1
@@ -47,6 +52,23 @@
 </textarea>
         <br>
         <button id="run">RUN</button>
+=======
+        <select id="demos">
+            <option>Select a demo...</option>
+        </select>
+        <br>
+        <textarea id="source-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">10 PAPER 0: INK 1: BRIGHT 1: CLS
+20 FOR x = 0 TO 255 STEP 5
+30 PLOT x, 0
+40 DRAW -x, 191 - x * 191 / 255
+50 PLOT 255 - x, 191
+60 DRAW x, x * 191 / 255 - 191
+70 NEXT x</textarea>
+        <br>
+        <button id="run-instant">RUN</button>
+        <button id="run-slow">RUN SLOW</button>
+        <button id="run-fast">RUN FAST</button>
+>>>>>>> refs/remotes/origin/master
         <br>
         <!--
         <button id="cls-test">CLS</button>
@@ -70,8 +92,40 @@
         <script>
             var bitmap = new ZX.Spectrum.Bitmap({target : document.getElementById('theCanvas')});
             
+<<<<<<< HEAD
             document.getElementById('run').addEventListener('click', function() {
                 ZX.Spectrum.Basic.run(document.getElementById('source-code').value);
+=======
+            document.addEventListener('DOMContentLoaded', function() {
+                var demos = document.getElementById('demos');
+                var demoScripts = document.querySelectorAll('script');
+                for (var i = 0; i < demoScripts.length; ++i) {
+                    if (demoScripts[i].type != 'text/x-zx-spectrum-basic') continue;
+                    var option = document.createElement('OPTION');
+                    option.value = demoScripts[i].id;
+                    option.textContent = demoScripts[i].title;
+                    demos.appendChild(option);
+                }
+                
+                document.getElementById('run-instant').addEventListener('click', function() {
+                    ZX.Spectrum.Basic.run(document.getElementById('source-code').value, 1000);
+                });
+                
+                document.getElementById('run-slow').addEventListener('click', function() {
+                    ZX.Spectrum.Basic.run(document.getElementById('source-code').value, 1);
+                });
+                
+                document.getElementById('run-fast').addEventListener('click', function() {
+                    ZX.Spectrum.Basic.run(document.getElementById('source-code').value, 50);
+                });
+                
+                demos.addEventListener('change', function() {
+                    var script = document.getElementById(this.value);
+                    if (script) {
+                        document.getElementById('source-code').value = script.textContent;
+                    }
+                });
+>>>>>>> refs/remotes/origin/master
             });
             
             /*
@@ -325,5 +379,77 @@
             });
             */
         </script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-colours" title="Colours">10 REM Some colours...
+20 PAPER 7: CLS
+30 FOR x = 2 TO 252 STEP 9
+40   FOR y = 7 TO 187 STEP 9
+50     INK x: PAPER y
+60     PLOT x, y: DRAW 1, 1
+70   NEXT y
+80 NEXT x</script>
+
+        <script type="text/x-zx-spectrum-basic" id="demo-random" title="Random">10 PAPER 0: INK 1: BRIGHT 1: CLS
+20 LET y = 95
+30 FOR x = 0 TO 250 STEP 5
+40 LET newy = RND * 180 + 6
+50 PLOT x, y
+60 DRAW 5, newy - y
+70 LET y = newy
+80 NEXT x</script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-logo" title="Logotype">  1 REM ZX Spectrum logotype 
+ 10 INK 0: PAPER 0: BRIGHT 0: FLASH 0
+ 20 CLS
+ 30 INK 6: PAPER 1
+ 40 PLOT 8, 8: DRAW 239, 0: DRAW 0, 175: DRAW -239, 0: DRAW 0, -175
+ 41 PLOT 9, 9: DRAW 237, 0: DRAW 0, 173: DRAW -237, 0: DRAW 0, -173
+ 50 INK 5: PAPER 2
+ 60 PLOT 16, 16: DRAW 223, 0: DRAW 0, 159: DRAW -223, 0: DRAW 0, -159
+ 61 PLOT 18, 18: DRAW 219, 0: DRAW 0, 155: DRAW -219, 0: DRAW 0, -155
+ 70 PAPER 0: INK 2: BRIGHT 1
+ 80 PLOT 159, 48
+ 81 PLOT 158, 49: DRAW 1, 0
+ 82 PLOT 157, 50: DRAW 2, 0
+ 83 PLOT 156, 51: DRAW 3, 0
+ 84 PLOT 155, 52: DRAW 4, 0
+ 85 PLOT 154, 53: DRAW 5, 0
+ 86 PLOT 153, 54: DRAW 6, 0
+ 87 PLOT 152, 55: DRAW 7, 0
+ 90 PAPER 6
+100 PLOT 160, 48: DRAW 6, 0
+101 PLOT 160, 49: DRAW 5, 0
+102 PLOT 160, 50: DRAW 4, 0
+103 PLOT 160, 51: DRAW 3, 0
+104 PLOT 160, 52: DRAW 2, 0
+105 PLOT 160, 53: DRAW 1, 0
+106 PLOT 160, 54
+110 INK 4
+120 PLOT 175, 48
+121 PLOT 174, 49: DRAW 1, 0
+122 PLOT 173, 50: DRAW 2, 0
+123 PLOT 172, 51: DRAW 3, 0
+124 PLOT 171, 52: DRAW 4, 0
+125 PLOT 170, 53: DRAW 5, 0
+126 PLOT 169, 54: DRAW 6, 0
+127 PLOT 168, 55: DRAW 7, 0
+130 PAPER 5
+140 PLOT 176, 48: DRAW 6, 0
+141 PLOT 176, 49: DRAW 5, 0
+142 PLOT 176, 50: DRAW 4, 0
+143 PLOT 176, 51: DRAW 3, 0
+144 PLOT 176, 52: DRAW 2, 0
+145 PLOT 176, 53: DRAW 1, 0
+146 PLOT 176, 54
+150 PAPER 0: INK 5
+160 PLOT 184, 48: DRAW 6, 0
+161 PLOT 184, 49: DRAW 5, 0
+162 PLOT 184, 50: DRAW 4, 0
+163 PLOT 184, 51: DRAW 3, 0
+164 PLOT 184, 52: DRAW 2, 0
+165 PLOT 184, 53: DRAW 1, 0
+166 PLOT 184, 54
+199 STOP
+200 CLS</script>
     </body>
 </html>
