@@ -6,7 +6,7 @@
     
     var Basic = Spectrum['Basic'] = Spectrum['Basic'] || {};
     
-    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|([a-z]+)|([,;])|([=<>+*\-/]+)/gi;
+    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|([a-z]+)|([,;])|((<=)|(>=)|(<>)|(\*\*)|[=<>+\-*/)(])/gi;
     var NUMBER_TOKEN = 1,
         RESERVED_WORD_TOKEN = 8,
         IDENTIFIER_TOKEN = 9,
@@ -84,7 +84,7 @@
             }
         },
         "poke" : {
-            args : [NUMBER_ARG, ", ", NUMBER_ARG],
+            args : [NUMBER_ARG, ",", NUMBER_ARG],
             func : function(address, comma, value) {
                 ZX.Spectrum.currentBitmap.poke(address, value);
             }
@@ -126,7 +126,79 @@
         "rem" : {
             args : [],
             func : function() { }
+        },
+        "data" : {
+            args : [],
+            func : function() { }
+        },
+        "read" : {
+            args : [IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG, ",", IDENTIFIER_ARG],
+            func : function(id0, comma0, id1, comma1, id2, comma2, id3, comma3, id4, comma4, id5, comma5, id6, comma6, id7, comma7, id8, comma8, id9) {
+                if (!id0) return;
+                this.variables[id0] = readData.call(this);
+                if (!id1) return;
+                this.variables[id1] = readData.call(this);
+                if (!id2) return;
+                this.variables[id2] = readData.call(this);
+                if (!id3) return;
+                this.variables[id3] = readData.call(this);
+                if (!id4) return;
+                this.variables[id4] = readData.call(this);
+                if (!id5) return;
+                this.variables[id5] = readData.call(this);
+                if (!id6) return;
+                this.variables[id6] = readData.call(this);
+                if (!id7) return;
+                this.variables[id7] = readData.call(this);
+                if (!id8) return;
+                this.variables[id8] = readData.call(this);
+                if (!id9) return;
+                this.variables[id9] = readData.call(this);
+            }
+        },
+        "if" : {}
+    };
+    
+    var readData = function() {
+        ensureData.call(this);
+        if (this.next_data_index >= this.data_list.length) throw "E Out of DATA";
+        
+        return this.data_list[this.next_data_index++];
+    };
+    
+    var ensureData = function() {
+        if (this.data_list) return;
+        
+        var list = [];
+        var currentIndex = 0;
+        
+        while (currentIndex < this.len) {
+            var nextLineFeed = this.code.indexOf('\n', currentIndex);
+            var nextColon = this.code.indexOf(':', currentIndex);
+            var nextStop;
+                    
+            nextLineFeed = (nextLineFeed == -1) ? this.len : nextLineFeed;
+            nextColon = (nextColon == -1) ? this.len : nextColon;
+            nextStop = (nextLineFeed < nextColon) ? nextLineFeed : nextColon;
+                
+            var statement = this.code.substr(currentIndex, nextStop - currentIndex).trim();
+            var tokens = tokenize(statement);
+            
+            if (tokens[0].type == IDENTIFIER_TOKEN && tokens[0].value.toUpperCase() == "DATA") {
+                tokens = groupExpressions.call(this, tokens, false);
+                for (var i = 0; i < tokens.length; ++i) {
+                    if (tokens[i].type == SEPARATOR_TOKEN) continue;
+                    list.push(evaluateNumber.call(this, tokens[i]));
+                }
+            }
+            
+            currentIndex = nextStop + 1;
         }
+        
+        console.log(list);
+        
+        this.data_list = list;
+        this.next_data_index = 0;
     };
     
     var groupExpressions = function(tokens, letOrForCommand) {
@@ -171,10 +243,16 @@
     };
     
     var operatorPriorities = {
-        "+" : 1,
-        "-" : 1,
-        "*" : 2,
-        "/" : 2
+        "=" : 1,
+        "<>" : 1,
+        "<" : 1,
+        "<=" : 1,
+        ">" : 1,
+        ">=" : 1,
+        "+" : 2,
+        "-" : 2,
+        "*" : 3,
+        "/" : 3
     };
     
     var getTokenPriority = function(token) {
@@ -186,10 +264,20 @@
         }
     };
     
+    var log = function(node) {
+        if (node.left && node.right) {
+            return '(' + log(node.left) + ' ' + node.token.value + ' ' + log(node.right) + ')';
+        } else if (node.right) {
+            return node.token.value + '(' + log(node.right) + ')';
+        } else {
+            return node.token.value;
+        }
+    }
+    
     var makeExpressionTree = function(tokens) {
         // this : runtime
         var root = {
-            token : null,  // "return" token
+            token : { type : null, value : "return" },  // "return" token
             priority : 0,
             left : null,
             right : null,
@@ -200,13 +288,37 @@
         
         var index = 0;
         
-        while (index < tokens.length) {
+        for (index = 0; index < tokens.length; ++index) {
             var current = tokens[index];
-            var currentPriority = getTokenPriority(current);
-            
             var targetParent = latestNode;
             
-            while (targetParent.priority >= currentPriority) {
+            if (current.value == '(') {
+                latestNode = latestNode.right = {
+                    token : current,
+                    priority : 0,
+                    left : null,
+                    right : null,
+                    parent : latestNode
+                };
+                continue;
+            } else if (current.value == ')') {
+                while (targetParent && targetParent.token.value != '(') {
+                    targetParent = targetParent.parent;
+                }
+                
+                if (targetParent) {
+                    targetParent.priority = 999;
+                    targetParent.token.value = 'paren';
+                    latestNode = targetParent;
+                    continue;
+                } else {
+                    throw "Parenthesis closing error!";
+                }
+            }
+            
+            var currentPriority = getTokenPriority(current);
+            
+            while (targetParent && (targetParent.priority >= currentPriority) && targetParent.parent && targetParent.parent.priority != '(') {
                 targetParent = targetParent.parent;
             }
             
@@ -217,9 +329,9 @@
                 right : null,
                 parent : targetParent
             };
-            
-            ++index;
         }
+        
+        console.log(log(root));
         
         return root;
     };
@@ -227,10 +339,25 @@
     var evaluateExpressionNode = function(node) {
         if (!node) return 0;
         
-        if (node.token) {
+        if (node.token && node.token.type) {
             switch (node.token.type) {
                 case OPERATOR_TOKEN:
                     switch (node.token.value) {
+                        case '(':
+                        case 'paren':
+                            return evaluateExpressionNode.call(this, node.right);
+                        case '=':
+                            return (evaluateExpressionNode.call(this, node.left) == evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
+                        case '<>':
+                            return (evaluateExpressionNode.call(this, node.left) != evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
+                        case '<':
+                            return (evaluateExpressionNode.call(this, node.left) < evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
+                        case '<=':
+                            return (evaluateExpressionNode.call(this, node.left) <= evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
+                        case '>':
+                            return (evaluateExpressionNode.call(this, node.left) > evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
+                        case '>=':
+                            return (evaluateExpressionNode.call(this, node.left) >= evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
                         case '+':
                             return evaluateExpressionNode.call(this, node.left) +
                                    evaluateExpressionNode.call(this, node.right);
@@ -265,7 +392,9 @@
     var evaluateExpression = function(token) {
         var tree = makeExpressionTree.call(this, token);
         
-        return evaluateExpressionNode.call(this, tree);
+        var result = evaluateExpressionNode.call(this, tree);
+        console.log(result);
+        return result;
     };
     
     var evaluateNumber = function(token) {
@@ -284,7 +413,7 @@
         }
     };
     
-    var runOneLine = function(lineOfCode) {
+    var tokenize = function(lineOfCode) {
         if (lineOfCode.length == 0) return null;
         
         var tokens = [];
@@ -300,7 +429,7 @@
                     break;
                 }
             }
-            tokens.push({type: firstGroup, value:value});
+            tokens.push({type: firstGroup, value:value, index : match.index});
             match = tokensPattern.exec(lineOfCode);
         }
         
@@ -310,6 +439,15 @@
             // First token is a line number. Ignore it for now!
             tokens.splice(0, 1);
         }
+        
+        if (!tokens.length) return null;
+        
+        return tokens;
+    }
+    
+    var runOneLine = function(lineOfCode) {
+        var tokens = tokenize(lineOfCode);
+        if (!tokens) return null;
         
         if (tokens[0].type != IDENTIFIER_TOKEN) {
             return { error : 'Syntax error: ' + lineOfCode };
@@ -322,6 +460,27 @@
         var command = commands[commandName];
         if (!command) {
             return { error : 'Unknown command: ' + commandName };
+        } else if (commandName == "if") {
+            // Parse everything until right before THEN as an expressions
+            // If 0 : just move on
+            // If not 0 : set new lineOfCode to start after THEN and call runOneLine recursively
+            // This allows for constructs like IF X > 0 THEN IF Y > 0 THEN GOTO 1234
+            var conditionTokens = [null];
+            var newLineOfCode = "";
+            for (var i = 1; i < tokens.length; ++i) {
+                if (tokens[i].type == RESERVED_WORD_TOKEN && tokens[i].value.toUpperCase() == "THEN") {
+                    newLineOfCode = lineOfCode.substr(tokens[i + 1].index);
+                    break;
+                }
+                conditionTokens.push(tokens[i]);
+            }
+            conditionTokens = groupExpressions.call(this, conditionTokens, false);
+            var conditionValue = evaluateNumber.call(this, conditionTokens[0]);
+            if (conditionValue != 0 && newLineOfCode) {
+                return runOneLine(newLineOfCode);
+            } else {
+                return null;
+            }
         } else {
             var letOrFor = (commandName == 'let' || commandName == 'for');
             tokens = groupExpressions.call(this, tokens, letOrFor);
