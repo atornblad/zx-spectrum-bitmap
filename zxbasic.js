@@ -6,7 +6,7 @@
     
     var Basic = Spectrum['Basic'] = Spectrum['Basic'] || {};
     
-    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|([a-z]+)|([,;])|((<=)|(>=)|(<>)|(\*\*)|[=<>+\-*/)(])/gi;
+    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|([a-z][a-z0-9]*)|([,;])|((<=)|(>=)|(<>)|(\*\*)|[=<>+\-*/)(])/gi;
     var NUMBER_TOKEN = 1,
         RESERVED_WORD_TOKEN = 8,
         IDENTIFIER_TOKEN = 9,
@@ -199,7 +199,7 @@
             var statement = this.code.substr(currentIndex, nextStop - currentIndex).trim();
             var tokens = tokenize(statement);
             
-            if (tokens[0].type == IDENTIFIER_TOKEN && tokens[0].value.toUpperCase() == "DATA") {
+            if (tokens && tokens[0].type == IDENTIFIER_TOKEN && tokens[0].value.toUpperCase() == "DATA") {
                 tokens = groupExpressions.call(this, tokens, false);
                 for (var i = 0; i < tokens.length; ++i) {
                     if (tokens[i].type == SEPARATOR_TOKEN) continue;

@@ -412,6 +412,32 @@
  810 DRAW 7 - Y, 0
  820 PLOT 184, Y + 40
  830 DRAW 7 - Y, 0
- 840 NEXT Y</script>
+ 840 NEXT Y
+ 
+ 1000 REM Sinclair
+ 1010 INK 2: BRIGHT 0
+ 1020 LET Y = 32: LET thickness = 3
+ 1030 LET X = 52
+ 1040 READ dots
+ 1050 IF dots = -1 THEN GOTO 1150
+ 1060 IF dots = 0 THEN GOTO 1100
+ 1070 FOR y2 = Y TO Y + thickness - 1
+ 1080 PLOT X, y2: DRAW dots - 1, 0
+ 1090 NEXT y2
+ 1100 LET X = X + dots
+ 1110 READ space
+ 1120 IF space = -1 THEN GOTO 1150
+ 1130 LET X = X + space
+ 1140 GOTO 1040
+ 1150 LET Y = Y + thickness
+ 1160 LET thickness = 4 - thickness
+ 1170 IF Y <= 46 THEN GOTO 1030
+ 1180 DATA 0, 16, 3, 33, 3, 17, 3, -1
+ 1190 DATA 0, 52, 3, -1
+ 1200 DATA 15, 1, 3, 1, 15, 1, 15, 1, 3, 1, 15, 1, 3, 1, 15, -1
+ 1210 DATA 3, 13, 3, 1, 3, 9, 3, 1, 3, 13, 3, 13, 3, 1, 3, 1, 3, -1
+ 1220 DATA 15, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 15, 1, 3, 1, 3, -1
+ 1230 DATA 0, 12, 3, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 3, 9, 3, 1, 3, 1, 3, -1
+ 1240 DATA 15, 1, 3, 1, 3, 9, 3, 1, 15, 1, 3, 1, 15, 1, 3, 1, 3, -1</script>
     </body>
 </html>
