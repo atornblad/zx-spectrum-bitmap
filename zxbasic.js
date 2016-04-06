@@ -75,6 +75,21 @@
                 };
             }
         },
+        "gosub" : {
+            args : [NUMBER_ARG],
+            func : function(value) {
+                return  {
+                    goto_line : value,
+                    is_gosub : true
+                };
+            }
+        },
+        "return" : {
+            args: [],
+            func : function() {
+                return { goto_index : this.return_stack.pop() };
+            }
+        },
         "stop" : {
             args : [],
             func : function() {
@@ -527,7 +542,8 @@
             currentIndex : 0,
             variables : {},
             for_loops : {},
-            goto_line : null
+            goto_line : null,
+            return_stack : []
         }
         
         var stepFunc = function() {
@@ -568,6 +584,9 @@
                 return false;
             } else if (result.goto_line >= 1) {
                 runtime.goto_line = result.goto_line;
+                if (result.is_gosub) {
+                    runtime.return_stack.push(nextStop + 1);
+                }
                 runtime.currentIndex = 0;
             } else if (result.goto_index >= 1) {
                 runtime.currentIndex = result.goto_index;
