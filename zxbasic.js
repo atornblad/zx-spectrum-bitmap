@@ -43,6 +43,24 @@
                 ZX.Spectrum.currentBitmap.flash(value);
             }
         },
+        "over" : {
+            args : [NUMBER_ARG],
+            func : function(value) {
+                ZX.Spectrum.currentBitmap.over(value);
+            }
+        },
+        "inverse" : {
+            args : [NUMBER_ARG],
+            func : function(value) {
+                ZX.Spectrum.currentBitmap.inverse(value);
+            }
+        },
+        "csys" : {
+            args : [NUMBER_ARG],
+            func : function(value) {
+                ZX.Spectrum.currentBitmap.realSpectrumCoords(value);
+            }
+        },
         "cls" : {
             args : [],
             func : function() {
