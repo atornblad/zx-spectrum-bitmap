@@ -23,9 +23,9 @@
 60 DRAW x, x * 191 / 255 - 191
 70 NEXT x</textarea>
         <br>
-        <button id="run-instant">RUN</button>
-        <button id="run-slow">RUN SLOW</button>
+        <button id="run-instant">RUN INSTANT</button>
         <button id="run-fast">RUN FAST</button>
+        <button id="run-slow">RUN SLOW</button>
         <br>
         <!--
         <button id="cls-test">CLS</button>
@@ -350,58 +350,68 @@
 70 LET y = newy
 80 NEXT x</script>
         
-        <script type="text/x-zx-spectrum-basic" id="demo-logo" title="Logotype">  1 REM ZX Spectrum logotype 
- 10 INK 0: PAPER 0: BRIGHT 0: FLASH 0
- 20 CLS
- 30 INK 6: PAPER 1
- 40 PLOT 8, 8: DRAW 239, 0: DRAW 0, 175: DRAW -239, 0: DRAW 0, -175
- 41 PLOT 9, 9: DRAW 237, 0: DRAW 0, 173: DRAW -237, 0: DRAW 0, -173
- 50 INK 5: PAPER 2
- 60 PLOT 16, 16: DRAW 223, 0: DRAW 0, 159: DRAW -223, 0: DRAW 0, -159
- 61 PLOT 18, 18: DRAW 219, 0: DRAW 0, 155: DRAW -219, 0: DRAW 0, -155
- 70 PAPER 0: INK 2: BRIGHT 1
- 80 PLOT 159, 48
- 81 PLOT 158, 49: DRAW 1, 0
- 82 PLOT 157, 50: DRAW 2, 0
- 83 PLOT 156, 51: DRAW 3, 0
- 84 PLOT 155, 52: DRAW 4, 0
- 85 PLOT 154, 53: DRAW 5, 0
- 86 PLOT 153, 54: DRAW 6, 0
- 87 PLOT 152, 55: DRAW 7, 0
- 90 PAPER 6
-100 PLOT 160, 48: DRAW 6, 0
-101 PLOT 160, 49: DRAW 5, 0
-102 PLOT 160, 50: DRAW 4, 0
-103 PLOT 160, 51: DRAW 3, 0
-104 PLOT 160, 52: DRAW 2, 0
-105 PLOT 160, 53: DRAW 1, 0
-106 PLOT 160, 54
-110 INK 4
-120 PLOT 175, 48
-121 PLOT 174, 49: DRAW 1, 0
-122 PLOT 173, 50: DRAW 2, 0
-123 PLOT 172, 51: DRAW 3, 0
-124 PLOT 171, 52: DRAW 4, 0
-125 PLOT 170, 53: DRAW 5, 0
-126 PLOT 169, 54: DRAW 6, 0
-127 PLOT 168, 55: DRAW 7, 0
-130 PAPER 5
-140 PLOT 176, 48: DRAW 6, 0
-141 PLOT 176, 49: DRAW 5, 0
-142 PLOT 176, 50: DRAW 4, 0
-143 PLOT 176, 51: DRAW 3, 0
-144 PLOT 176, 52: DRAW 2, 0
-145 PLOT 176, 53: DRAW 1, 0
-146 PLOT 176, 54
-150 PAPER 0: INK 5
-160 PLOT 184, 48: DRAW 6, 0
-161 PLOT 184, 49: DRAW 5, 0
-162 PLOT 184, 50: DRAW 4, 0
-163 PLOT 184, 51: DRAW 3, 0
-164 PLOT 184, 52: DRAW 2, 0
-165 PLOT 184, 53: DRAW 1, 0
-166 PLOT 184, 54
-199 STOP
-200 CLS</script>
+        <script type="text/x-zx-spectrum-basic" id="demo-logo" title="Logotype">  10 REM Clear screen and set up background colours
+  20 PAPER 7: INK 0: FLASH 0: BRIGHT 0: CLS
+  30 FOR X = 6 TO 25
+  40 FOR Y = 4 TO 5
+  50 POKE 16384 + 6144 + 32 * Y + X, 64
+  60 NEXT Y
+  70 FOR Y = 6 TO 19
+  80 POKE 16384 + 6144 + 32 * Y + X, 120
+  90 NEXT Y
+ 100 NEXT X
+ 
+ 200 REM Outlines
+ 210 PLOT 47, 31
+ 220 DRAW 208 - 47, 0
+ 230 DRAW 0, 160 - 31
+ 240 DRAW 47 - 208, 0
+ 250 DRAW 0, 31 - 160
+ 260 BRIGHT 1
+ 270 PLOT 48, 48
+ 280 DRAW 207 - 48, 0
+ 
+ 400 REM Rainbow bands - red
+ 410 PAPER 0: INK 2
+ 420 FOR Y = 1 TO 7
+ 430 PLOT 168 - Y, Y + 32
+ 440 DRAW Y - 1, 0
+ 450 PLOT 160 - Y, Y + 40
+ 460 DRAW Y - 1, 0
+ 470 NEXT Y
+
+ 500 REM Rainbow bands - yellow
+ 510 PAPER 2: INK 6
+ 520 FOR Y = 1 TO 7
+ 530 PLOT 176 - Y, Y + 32
+ 540 DRAW Y - 1, 0
+ 550 PLOT 168 - Y, Y + 40
+ 560 DRAW Y - 1, 0
+ 570 NEXT Y
+
+ 600 REM Rainbow bands - green
+ 610 PAPER 6: INK 4
+ 620 FOR Y = 1 TO 7
+ 630 PLOT 184 - Y, Y + 32
+ 640 DRAW Y - 1, 0
+ 650 PLOT 176 - Y, Y + 40
+ 660 DRAW Y - 1, 0
+ 670 NEXT Y
+
+ 700 REM Rainbow bands - cyan
+ 710 PAPER 4: INK 5
+ 720 FOR Y = 1 TO 7
+ 730 PLOT 192 - Y, Y + 32
+ 740 DRAW Y - 1, 0
+ 750 PLOT 184 - Y, Y + 40
+ 760 DRAW Y - 1, 0
+ 770 NEXT Y
+ 780 PAPER 0
+ 790 FOR Y = 0 TO 7
+ 800 PLOT 192, Y + 32
+ 810 DRAW 7 - Y, 0
+ 820 PLOT 184, Y + 40
+ 830 DRAW 7 - Y, 0
+ 840 NEXT Y</script>
     </body>
 </html>
