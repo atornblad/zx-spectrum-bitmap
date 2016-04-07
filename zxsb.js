@@ -53,11 +53,11 @@
     }
     
     var getPointInfo = function(x, y, realSpectrumCoords) {
-        x &= 255;
+        x = Math.round(x) & 255;
         if (realSpectrumCoords) {
             y = 175 - y;
         }
-        y &= 255;
+        y = Math.round(y) & 255;
         
         if (y > 191) return null;
         

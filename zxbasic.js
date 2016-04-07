@@ -4,14 +4,30 @@
     
     var Spectrum = ZX['Spectrum'] = ZX['Spectrum'] || {};
     
+    var Font = Spectrum['Font'] = Spectrum['Font'] || [0,0,0,0,0,0,0,0,0,16,16,16,16,0,16,0,0,36,36,0,0,0,0,0,0,36,126,36,36,126,36,0,0,8,62,40,62,10,62,8,0,98,100,8,16,38,70,0,
+        0,16,40,16,42,68,58,0,0,8,16,0,0,0,0,0,0,4,8,8,8,8,4,0,0,32,16,16,16,16,32,0,0,0,20,8,62,8,20,0,0,0,8,8,62,8,8,0,0,0,0,0,0,8,8,16,0,0,0,0,62,
+        0,0,0,0,0,0,0,0,24,24,0,0,0,2,4,8,16,32,0,0,60,70,74,82,98,60,0,0,24,40,8,8,8,62,0,0,60,66,2,60,64,126,0,0,60,66,12,2,66,60,0,0,8,24,40,72,
+        126,8,0,0,126,64,124,2,66,60,0,0,60,64,124,66,66,60,0,0,126,2,4,8,16,16,0,0,60,66,60,66,66,60,0,0,60,66,66,62,2,60,0,0,0,0,16,0,0,16,0,0,0,
+        16,0,0,16,16,32,0,0,4,8,16,8,4,0,0,0,0,62,0,62,0,0,0,0,16,8,4,8,16,0,0,60,66,4,8,0,8,0,0,60,74,86,94,64,60,0,0,60,66,66,126,66,66,0,0,124,66,
+        124,66,66,124,0,0,60,66,64,64,66,60,0,0,120,68,66,66,68,120,0,0,126,64,124,64,64,126,0,0,126,64,124,64,64,64,0,0,60,66,64,78,66,60,0,0,66,66,
+        126,66,66,66,0,0,62,8,8,8,8,62,0,0,2,2,2,66,66,60,0,0,68,72,112,72,68,66,0,0,64,64,64,64,64,126,0,0,66,102,90,66,66,66,0,0,66,98,82,74,70,66,
+        0,0,60,66,66,66,66,60,0,0,124,66,66,124,64,64,0,0,60,66,66,82,74,60,0,0,124,66,66,124,68,66,0,0,60,64,60,2,66,60,0,0,254,16,16,16,16,16,0,0,
+        66,66,66,66,66,60,0,0,66,66,66,66,36,24,0,0,66,66,66,66,90,36,0,0,66,36,24,24,36,66,0,0,130,68,40,16,16,16,0,0,126,4,8,16,32,126,0,0,14,8,8,
+        8,8,14,0,0,0,64,32,16,8,4,0,0,112,16,16,16,16,112,0,0,16,56,84,16,16,16,0,0,0,0,0,0,0,0,255,0,28,34,120,32,32,126,0,0,0,56,4,60,68,60,0,0,32,
+        32,60,34,34,60,0,0,0,28,32,32,32,28,0,0,4,4,60,68,68,60,0,0,0,56,68,120,64,60,0,0,12,16,24,16,16,16,0,0,0,60,68,68,60,4,56,0,64,64,120,68,68,
+        68,0,0,16,0,48,16,16,56,0,0,4,0,4,4,4,36,24,0,32,40,48,48,40,36,0,0,16,16,16,16,16,12,0,0,0,104,84,84,84,84,0,0,0,120,68,68,68,68,0,0,0,56,
+        68,68,68,56,0,0,0,120,68,68,120,64,64,0,0,60,68,68,60,4,6,0,0,28,32,32,32,32,0,0,0,56,64,56,4,120,0,0,16,56,16,16,16,12,0,0,0,68,68,68,68,56,
+        0,0,0,68,68,40,40,16,0,0,0,68,84,84,84,40,0,0,0,68,40,16,40,68,0,0,0,68,68,68,60,4,56,0,0,124,8,16,32,124,0,0,14,8,48,8,8,14,0,0,8,8,8,8,8,8,
+        0,0,112,16,12,16,16,112,0,0,20,40,0,0,0,0,0,60,66,153,161,161,153,66,60];
+    
     var Basic = Spectrum['Basic'] = Spectrum['Basic'] || {};
     
-    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|([a-z][a-z0-9]*)|([,;])|((<=)|(>=)|(<>)|(\*\*)|[=<>+\-*/)(])/gi;
+    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|[-=<>+*\/)()])|([a-z][a-z0-9]*)|(,|;)/gi;
     var NUMBER_TOKEN = 1,
         RESERVED_WORD_TOKEN = 8,
-        IDENTIFIER_TOKEN = 9,
-        SEPARATOR_TOKEN = 10,
-        OPERATOR_TOKEN = 11,
+        OPERATOR_TOKEN = 9,
+        IDENTIFIER_TOKEN = 10,
+        SEPARATOR_TOKEN = 11,
         EXPRESSION_TOKEN = 1000;
     
     var IGNORE_ARG = 0,
@@ -77,6 +93,29 @@
             args : [NUMBER_ARG, ",", NUMBER_ARG],
             func : function(x, comma, y) {
                 ZX.Spectrum.currentBitmap.draw(x, y);
+            }
+        },
+        "circle" : {
+            args : [NUMBER_ARG, ",", NUMBER_ARG, ",", NUMBER_ARG],
+            func : function(x, comma0, y, comma1, r) {
+                var a = Math.PI / (r + 4);
+                
+                var x1 = (x + r) | 0, y1 = y | 0;
+                
+                while (a < Math.PI * 2) {
+                    var x2 = x + Math.cos(a) * r,
+                        y2 = y + Math.sin(a) * r;
+                    x2 = x2 | 0;
+                    y2 = y2 | 0;
+                    
+                    ZX.Spectrum.currentBitmap.line(x1, y1, x2, y2);
+                    x1 = x2;
+                    y1 = y2;
+                    
+                    a += Math.PI / (r + 4);
+                }
+                
+                ZX.Spectrum.currentBitmap.line(x2, y1, (x + r) | 0, y | 0);
             }
         },
         "let" : {
@@ -228,8 +267,6 @@
             currentIndex = nextStop + 1;
         }
         
-        console.log(list);
-        
         this.data_list = list;
         this.next_data_index = 0;
     };
@@ -282,16 +319,18 @@
         "<=" : 1,
         ">" : 1,
         ">=" : 1,
-        "+" : 2,
-        "-" : 2,
-        "*" : 3,
-        "/" : 3
+        "SIN" : 5,
+        "COS" : 5,
+        "+" : 3,
+        "-" : 3,
+        "*" : 4,
+        "/" : 4
     };
     
     var getTokenPriority = function(token) {
         switch (token.type) {
             case OPERATOR_TOKEN:
-                return operatorPriorities[token.value];
+                return operatorPriorities[token.value.toUpperCase()];
             default:
                 return 999;
         }
@@ -364,8 +403,6 @@
             };
         }
         
-        console.log(log(root));
-        
         return root;
     };
     
@@ -375,9 +412,9 @@
         if (node.token && node.token.type) {
             switch (node.token.type) {
                 case OPERATOR_TOKEN:
-                    switch (node.token.value) {
+                    switch (node.token.value.toUpperCase()) {
                         case '(':
-                        case 'paren':
+                        case 'PAREN':
                             return evaluateExpressionNode.call(this, node.right);
                         case '=':
                             return (evaluateExpressionNode.call(this, node.left) == evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
@@ -391,6 +428,10 @@
                             return (evaluateExpressionNode.call(this, node.left) > evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
                         case '>=':
                             return (evaluateExpressionNode.call(this, node.left) >= evaluateExpressionNode.call(this, node.right)) ? 1 : 0;
+                        case 'SIN':
+                            return Math.sin(evaluateExpressionNode.call(this, node.right));
+                        case 'COS':
+                            return Math.cos(evaluateExpressionNode.call(this, node.right));
                         case '+':
                             return evaluateExpressionNode.call(this, node.left) +
                                    evaluateExpressionNode.call(this, node.right);
@@ -426,7 +467,6 @@
         var tree = makeExpressionTree.call(this, token);
         
         var result = evaluateExpressionNode.call(this, tree);
-        console.log(result);
         return result;
     };
     
@@ -562,7 +602,55 @@
             for_loops : {},
             goto_line : null,
             return_stack : []
-        }
+        };
+        
+        var scrollErrorPartUpOneLine = function() {
+            for (var y = 176; y < 184; ++y) {
+                var target = ZX.Spectrum.Bitmap.getPointInfo(0, y, false).bitmapAddress;
+                var source = ZX.Spectrum.Bitmap.getPointInfo(0, y + 8, false).bitmapAddress;
+                for (var x = 0; x <= 31; ++x) {
+                    ZX.Spectrum.currentBitmap.poke(target + x, ZX.Spectrum.currentBitmap.peek(source + x));
+                    ZX.Spectrum.currentBitmap.poke(source + x, 0);
+                }
+            }
+        };
+        
+        var printError = function(text) {
+            var x = 0, y = 184;
+            
+            for (var clsAttr = 23232; clsAttr < 23296; ++clsAttr) {
+                ZX.Spectrum.currentBitmap.poke(clsAttr, 56);
+            }
+            for (var clsY = 176; clsY <= 191; ++clsY) {
+                var clsStart = ZX.Spectrum.Bitmap.getPointInfo(0, clsY, false);
+                for (var addr = clsStart.bitmapAddress; addr <= clsStart.bitmapAddress + 31; ++addr) {
+                    ZX.Spectrum.currentBitmap.poke(addr, 0);
+                }
+            }
+            
+            for (var i = 0; i < text.length; ++i) {
+                var charCode = text.charCodeAt(i);
+                switch (charCode) {
+                    case 169:
+                        charCode = 95;
+                        break;
+                    default:
+                        if (charCode >= 32 && charCode <= 127)
+                            charCode -= 32;
+                        else
+                            charCode = 0;
+                        break;
+                }
+                for (y2 = 0; y2 <= 7; ++y2) {
+                    var posInfo = ZX.Spectrum.Bitmap.getPointInfo(x, y + y2, false);
+                    ZX.Spectrum.currentBitmap.poke(posInfo.bitmapAddress, Font[charCode * 8 + y2]);
+                }
+                x = (x + 8) % 256;
+                if (!x) {
+                    scrollErrorPartUpOneLine();
+                }
+            }
+        };
         
         var stepFunc = function() {
             do {
@@ -593,12 +681,17 @@
                 }
             } while (runtime.goto_line >= 1);
             
-            var result = runOneLine.call(runtime, statement);
+            try {
+                var result = runOneLine.call(runtime, statement);
+            } catch (message) {
+                printError(message);
+                return false;
+            }
             
             if (result == null) {
                 runtime.currentIndex = nextStop + 1;
             } else if (result.error) {
-                window.alert(result.error);
+                printError(result.error);
                 return false;
             } else if (result.goto_line >= 1) {
                 runtime.goto_line = result.goto_line;
