@@ -15,35 +15,39 @@
             <option>Select a demo...</option>
         </select>
         <br>
-        <textarea id="source-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">10 PAPER 0: INK 1: BRIGHT 1: CLS
-20 FOR x = 0 TO 255 STEP 5
-30 PLOT x, 0
-40 DRAW -x, 191 - x * 191 / 255
-50 PLOT 255 - x, 191
-60 DRAW x, x * 191 / 255 - 191
-70 NEXT x</textarea>
+        <textarea id="source-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"> 10 REM Type a ZX Sinclair
+ 20 REM Spectrum BASIC program
+ 30 REM and click one of the
+ 40 REM RUN buttons.
+ 50 REM
+ 60 REM Supported commands:
+ 70 REM   LET, FOR, NEXT, GOTO,
+ 80 REM   GOSUB, RETURN, STOP,
+ 90 REM   INK, PAPER, OVER,
+100 REM   INVERSE, FLASH,
+110 REM   BRIGHT, PLOT, DRAW,
+120 REM   CLS, POKE, PEEK,
+130 REM   READ, DATA
+140 REM
+150 REM Not supported:
+160 REM   Strings
+170 REM   Attributed PLOT/DRAW
+180 REM   Keyboard interaction
+190 REM   Pausing / timing
+200 REM   Sound
+210 REM
+220 REM Added commands:
+230 REM   CSYS 1
+240 REM      Normal ZX Spectrum
+250 REM      coordinate system
+260 REM   CSYS 0
+270 REM      Reversed fullscreen
+280 REM      coordinate system</textarea>
         <br>
         <button id="run-instant">RUN INSTANT</button>
         <button id="run-fast">RUN FAST</button>
         <button id="run-slow">RUN SLOW</button>
         <br>
-        <!--
-        <button id="cls-test">CLS</button>
-        <button id="speed-test">Speed POKE</button>
-        <button id="plot-test">PLOT x 500</button>
-        <button id="line-test">LINE x 10</button>
-        <button id="logotype-test">Logotype</button>
-        <br>
-        <br>
-        <label for="ink">INK</label> <input type="number" min="0" max="7" value="0" id="ink"><br>
-        <label for="paper">PAPER</label> <input type="number" min="0" max="7" value="7" id="paper"><br>
-        <label for="bright">BRIGHT</label> <input type="number" min="0" max="1" value="0" id="bright"><br>
-        <label for="flash">FLASH</label> <input type="number" min="0" max="1" value="0" id="flash"><br>
-        <br>
-        <label for="poke-address">POKE</label> <input type="number" min="16384" max="23295" value="16384" id="poke-address">, <input type="number" min="0" max="255" value="0" id="poke-value"> <button id="poke">GO</button><br>
-        <label for="peek-address">PEEK</label> <input type="number" min="16384" max="23295" value="16384" id="peek-address"> <button id="peek">GO</button> <span class="output" id="peek-result">?</span><br>
-        <br>
-        -->
         <label for="save-filename">SAVE</label> "<input type="text" maxlength="10" style="width:10.5em" id="save-filename" value="javascript">" SCREEN$ <button id="save">GO</button><br>
         <br>
         <script>
@@ -78,208 +82,6 @@
                         document.getElementById('source-code').value = script.textContent;
                     }
                 });
-            });
-            
-            /*
-            var intervalId;
-            function stopInterval() {
-                if (intervalId) {
-                    window.clearInterval(intervalId);
-                    intervalId = null;
-                }
-            }
-            
-            document.getElementById('speed-test').addEventListener('click', function() {
-                stopInterval();
-                intervalId = window.setInterval(function() {
-                    var time = (performance.now() % 31415) / 100;
-                    for (var i = time; i < time + 10; i += 0.01) {
-                        var radius = 50 + Math.sin(i * 0.25) * 37;
-                        
-                        var x = 128 + radius * Math.sin(i * i * 2);
-                        var y = 96 + radius * Math.cos(i * i * 2);
-                        
-                        var pointInfo = ZX.Spectrum.Bitmap.getPointInfo(x, y);
-                        bitmap.poke(pointInfo.bitmapAddress, bitmap.peek(pointInfo.bitmapAddress) | pointInfo.bit);
-                        bitmap.poke(pointInfo.attrAddress, 56);
-                    }
-                    
-                    for (var i = 0; i < 50; ++i) {
-                        var address = 16384 + (Math.random() * 6144) | 0;
-                        var data = bitmap.peek(address) ^ ((Math.random() * 256) | 0);
-                        
-                        bitmap.poke(address, data);
-                    }
-                    
-                    for (var i = 0; i < 10; ++i) {
-                        var address = 16384 + 6144 + (Math.random() * 768) | 0;
-                        var data = bitmap.peek(address) ^ ((Math.random() * 256) | 0);
-                        
-                        bitmap.poke(address, data);
-                    }
-                }, 1);
-            });
-            
-            document.getElementById('plot-test').addEventListener('click', function() {
-                stopInterval();
-                for (var i = 0; i < 500; ++i) {
-                    var x = Math.random() * 256;
-                    var y = Math.random() * 192;
-                    bitmap.plot(x, y);
-                }
-            });
-            
-            document.getElementById('line-test').addEventListener('click', function() {
-                stopInterval();
-                for (var i = 0; i < 10; ++i) {
-                    var x1 = Math.random() * 256;
-                    var y1 = Math.random() * 192;
-                    var x2 = Math.random() * 256;
-                    var y2 = Math.random() * 192;
-                    bitmap.line(x1, y1, x2, y2);
-                }
-            });
-            
-            document.getElementById('cls-test').addEventListener('click', function() {
-                stopInterval();
-                bitmap.cls();
-            });
-            
-            document.getElementById('logotype-test').addEventListener('click', function() {
-                var i, x, y;
-                
-                stopInterval();
-                bitmap.paper(7);
-                bitmap.ink(0);
-                bitmap.flash(0);
-                bitmap.bright(0);
-                bitmap.cls();
-                
-                for (var x = 6; x <= 25; ++x) {
-                    for (y = 4; y <= 19; ++y) {
-                        bitmap.poke(16384 + 6144 + 32 * y + x, (y <= 5) ? 64 : 120);
-                    }
-                }
-                
-                bitmap.line(47, 31, 208, 31);
-                bitmap.line(47, 31, 47, 160);
-                bitmap.line(208, 31, 208, 160);
-                bitmap.line(47, 160, 208, 160);
-                
-                bitmap.bright(1);
-                bitmap.line(48, 48, 207, 48);
-                
-                bitmap.bright(1);
-                bitmap.paper(0);
-                bitmap.ink(2);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(168 - y, y + 32, 167, y + 32);
-                    bitmap.line(160 - y, y + 40, 159, y + 40);
-                }
-                
-                bitmap.paper(2);
-                bitmap.ink(6);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(176 - y, y + 32, 175, y + 32);
-                    bitmap.line(168 - y, y + 40, 167, y + 40);
-                }
-                
-                bitmap.paper(6);
-                bitmap.ink(4);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(184 - y, y + 32, 183, y + 32);
-                    bitmap.line(176 - y, y + 40, 175, y + 40);
-                }
-                
-                bitmap.paper(4);
-                bitmap.ink(5);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(192 - y, y + 32, 191, y + 32);
-                    bitmap.line(184 - y, y + 40, 183, y + 40);
-                }
-                
-                bitmap.paper(0);
-                bitmap.ink(5);
-                for (y = 0; y <= 7; ++y) {
-                    bitmap.line(192, y + 32, 199 - y, y + 32);
-                    bitmap.line(184, y + 40, 191 - y, y + 40);
-                }
-                
-                bitmap.ink(2);
-                bitmap.bright(0);
-                var lines = [
-                    [0, 16, 3, 33, 3, 17, 3],
-                    [0, 52, 3],
-                    [15, 1, 3, 1, 15, 1, 15, 1, 3, 1, 15, 1, 3, 1, 15],
-                    [3, 13, 3, 1, 3, 9, 3, 1, 3, 13, 3, 13, 3, 1, 3, 1, 3],
-                    [15, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 15, 1, 3, 1, 3],
-                    [0, 12, 3, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 3, 9, 3, 1, 3, 1, 3],
-                    [15, 1, 3, 1, 3, 9, 3, 1, 15, 1, 3, 1, 15, 1, 3, 1, 3]
-                ];
-                for (y = 32; y <= 46; ++y) {
-                    var line = lines[(((y % 4) == 3) ? (y >> 1) : (y >> 2) << 1) - 16];
-                    x = 52;
-                    for (i = 0; i < line.length; i += 2) {
-                        if (line[i]) {
-                            bitmap.line(x, y, x + line[i] - 1, y);
-                        }
-                        x += (line[i] + line[i + 1]);
-                    }
-                }
-                
-                bitmap.paper(7);
-                bitmap.bright(0);
-                for (i = 0; i <= 125; i += 5) {
-                    bitmap.ink(1);
-                    bitmap.line(i, 0, 0, 125 - i);
-                    bitmap.ink(2);
-                    bitmap.line(255 - i, 191, 255, i + 66);
-                }
-                
-                bitmap.ink(3);
-                bitmap.bright(1);
-                i = 0;
-                var liner = function() {
-                    x = 128 + 30 * Math.sin(i / 100) + 20 * Math.sin(i / 31 + 1);
-                    y = 106 + 30 * Math.cos(i / 100) + 20 * Math.cos(i / 43 + 1);
-                    bitmap.plot(x, y);
-                    
-                    ++i;
-                    if (i < 1200) {
-                        window.setTimeout(liner, 1);
-                    } else {
-                        bitmap.ink(document.getElementById('ink').value);
-                        bitmap.paper(document.getElementById('paper').value);
-                        bitmap.bright(document.getElementById('bright').value);
-                        bitmap.flash(document.getElementById('flash').value);
-                    }
-                };
-                
-                liner();
-            });
-            
-            document.getElementById('ink').addEventListener('change', function() {
-                bitmap.ink(this.value);
-            });
-            
-            document.getElementById('paper').addEventListener('change', function() {
-                bitmap.paper(this.value);
-            });
-            
-            document.getElementById('bright').addEventListener('change', function() {
-                bitmap.bright(this.value);
-            });
-            
-            document.getElementById('flash').addEventListener('change', function() {
-                bitmap.flash(this.value);
-            });
-            
-            document.getElementById('poke').addEventListener('click', function() {
-                bitmap.poke(document.getElementById('poke-address').value, document.getElementById('poke-value').value);
-            });
-            
-            document.getElementById('peek').addEventListener('click', function() {
-                document.getElementById('peek-result').textContent = bitmap.peek(document.getElementById('peek-address'));
             });
             
             document.getElementById('save').addEventListener('click', function() {
@@ -324,24 +126,17 @@
                     link.addEventListener('click', function() {
                         window.setTimeout(function() {
                             link.parentNode.removeChild(link);
-                        }, 1000);
+                        }, 10);
                     });
                     this.parentNode.insertBefore(link, this.nextSibling);
+                    window.setTimeout(function() {
+                        link.click();
+                    }, 10);
                 }
             });
-            */
         </script>
-        
-        <script type="text/x-zx-spectrum-basic" id="demo-colours" title="Colours">10 REM Some colours...
-20 PAPER 7: CLS
-30 FOR x = 2 TO 252 STEP 9
-40   FOR y = 7 TO 187 STEP 9
-50     INK x: PAPER y
-60     PLOT x, y: DRAW 1, 1
-70   NEXT y
-80 NEXT x</script>
 
-        <script type="text/x-zx-spectrum-basic" id="demo-random" title="Random">10 PAPER 0: INK 1: BRIGHT 1: CLS
+        <script type="text/x-zx-spectrum-basic" id="demo-random" title="Random">10 PAPER 0: INK 1: BRIGHT 1: CLS: CSYS 0
 20 LET y = 95
 30 FOR x = 0 TO 250 STEP 5
 40 LET newy = RND * 180 + 6
@@ -349,9 +144,102 @@
 60 DRAW 5, newy - y
 70 LET y = newy
 80 NEXT x</script>
+
+        <script type="text/x-zx-spectrum-basic" id="demo-union-jack" title="Union Jack">  1 REM Slightly adapted from original
+ 
+ 10 LET r=2: LET w=7: LET b=1: CSYS 1
+ 20 PAPER b: INK w: CLS
+ 
+ 30 REM black in bottom of screen
+ 40 INVERSE 1: PAPER 0
+ 50 FOR n=40 TO -16 STEP -8
+ 55 PLOT 7,n: DRAW 241,0
+ 80 NEXT n: INVERSE 0: PAPER b
+ 
+100 REM draw in white parts
+105 REM St. George
+110 FOR n=0 TO 7
+120 PLOT 104 + n,175: DRAW 0,-35
+130 PLOT 151 - n,175: DRAW 0,-35
+140 PLOT 151 - n,48: DRAW 0,35
+150 PLOT 104 + n,48: DRAW 0,35
+160 NEXT n
+200 FOR n=0 TO 11
+210 PLOT 0, 139 - n: DRAW 111,0
+220 PLOT 255, 139 - n: DRAW -111,0
+230 PLOT 255, 84 + n: DRAW -111,0
+240 PLOT 0, 84 + n: DRAW 111,0
+250 NEXT n
+ 
+300 REM St. Andrew
+310 FOR n=0 TO 35
+320 PLOT 1 + 2 * n, 175 - n: DRAW 32, 0
+330 PLOT 224 - 2 * n, 175 - n: DRAW 16, 0
+340 PLOT 254 - 2 * n, 48 + n: DRAW -32, 0 
+350 PLOT 17 + 2 * n, 48 + n: DRAW 16, 0
+360 NEXT n
+370 FOR n = 0 TO 19
+380 PLOT 185 + 2 * n, 140 + n: DRAW 32, 0 
+390 PLOT 200 + 2 * n, 83 - n: DRAW 16, 0
+400 PLOT 39 - 2 * n, 83 - n: DRAW 32, 0
+410 PLOT 54 - 2 * n, 140 + n: DRAW -16, 0
+420 NEXT n
+ 
+425 REM fill in extra bits 
+430 FOR n=0 TO 15
+440 PLOT 255,160 + n: DRAW 2 * n - 30,0 
+450 PLOT 0, 63 - n: DRAW 31 - 2 * n,0
+460 NEXT n
+470 FOR n=0 TO 7
+480 PLOT 0, 160 + n: DRAW 14 - 2 * n,0
+485 PLOT 255, 63 - n: DRAW 2 * n - 15,0 
+490 NEXT n
+
+500 REM red stripes 
+510 INVERSE 1
+ 
+520 REM St George
+525 PAPER r
+530 FOR n=96 TO 120 STEP 8
+540 PLOT 7,n: DRAW 241,0 
+550 NEXT n
+560 FOR n=112 TO 136 STEP 8
+570 PLOT n,168: DRAW 0,-113 
+580 NEXT n
+ 
+600 REM St Patrick
+610 PLOT 170,140: DRAW 70,35 
+620 PLOT 179,140: DRAW 70,35 
+630 PLOT 199,83:  DRAW 56,-28 
+640 PLOT 184,83:  DRAW 70,-35 
+650 PLOT 86,83:   DRAW -70,-35 
+660 PLOT 72,83:   DRAW -70,-35 
+670 PLOT 56,140:  DRAW -56,28 
+680 PLOT 71,140:  DRAW -70,35 
+690 INVERSE 0: PAPER 0: INK 7</script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-colour-wheel" title="Colour wheel"> 10 PAPER 7: INK 0: CSYS 1: BRIGHT 1: FLASH 0: CLS
+
+100 FOR O = -10 TO 10
+110 FOR H = 1 TO 12
+120 INK H / 2 + 0.5
+130 LET A = (H + O * 0.037) * 3.14159265358979 / 6
+140 LET DX = SIN A: LET DY = COS A
+150 PLOT 127 + 70 * DX, 83 + 70 * DY
+160 DRAW 10 * DX, 10 * DY
+170 NEXT H
+180 NEXT O
+
+200 LET X = 127: LET Y = 83
+210 FOR A = 1 TO 300 STEP 0.1
+220 LET X2 = 127 + A / 5 * SIN(A / 10)
+230 LET Y2 = 83 + A / 5 * COS(A / 10)
+240 INK A / 50 + 0.5: PLOT X, Y: DRAW X2 - X, Y2 - Y
+250 LET X = X2: LET Y = Y2
+260 NEXT A</script>
         
         <script type="text/x-zx-spectrum-basic" id="demo-logo" title="Logotype">  10 REM Clear screen and set up background colours
-  20 PAPER 7: INK 0: FLASH 0: BRIGHT 0: CLS
+  20 PAPER 7: INK 0: FLASH 0: BRIGHT 0: CLS: CSYS 1
   30 FOR X = 6 TO 25
   40 FOR Y = 4 TO 5
   50 POKE 16384 + 6144 + 32 * Y + X, 64
@@ -362,56 +250,82 @@
  100 NEXT X
  
  200 REM Outlines
- 210 PLOT 47, 31
- 220 DRAW 208 - 47, 0
- 230 DRAW 0, 160 - 31
- 240 DRAW 47 - 208, 0
- 250 DRAW 0, 31 - 160
+ 210 PLOT 47, 175 - 31
+ 220 DRAW 161, 0
+ 230 DRAW 0, -129
+ 240 DRAW -161, 0
+ 250 DRAW 0, 129
  260 BRIGHT 1
- 270 PLOT 48, 48
- 280 DRAW 207 - 48, 0
+ 270 PLOT 48, 127
+ 280 DRAW 159, 0
  
  400 REM Rainbow bands - red
  410 PAPER 0: INK 2
  420 FOR Y = 1 TO 7
- 430 PLOT 168 - Y, Y + 32
+ 430 PLOT 168 - Y, 143 - Y
  440 DRAW Y - 1, 0
- 450 PLOT 160 - Y, Y + 40
+ 450 PLOT 160 - Y, 135 - Y
  460 DRAW Y - 1, 0
  470 NEXT Y
 
  500 REM Rainbow bands - yellow
  510 PAPER 2: INK 6
  520 FOR Y = 1 TO 7
- 530 PLOT 176 - Y, Y + 32
+ 530 PLOT 176 - Y, 143 - Y
  540 DRAW Y - 1, 0
- 550 PLOT 168 - Y, Y + 40
+ 550 PLOT 168 - Y, 135 - Y
  560 DRAW Y - 1, 0
  570 NEXT Y
 
  600 REM Rainbow bands - green
  610 PAPER 6: INK 4
  620 FOR Y = 1 TO 7
- 630 PLOT 184 - Y, Y + 32
+ 630 PLOT 184 - Y, 143 - Y
  640 DRAW Y - 1, 0
- 650 PLOT 176 - Y, Y + 40
+ 650 PLOT 176 - Y, 135 - Y
  660 DRAW Y - 1, 0
  670 NEXT Y
 
  700 REM Rainbow bands - cyan
  710 PAPER 4: INK 5
  720 FOR Y = 1 TO 7
- 730 PLOT 192 - Y, Y + 32
+ 730 PLOT 192 - Y, 143 - Y
  740 DRAW Y - 1, 0
- 750 PLOT 184 - Y, Y + 40
+ 750 PLOT 184 - Y, 135 - Y
  760 DRAW Y - 1, 0
  770 NEXT Y
  780 PAPER 0
  790 FOR Y = 0 TO 7
- 800 PLOT 192, Y + 32
+ 800 PLOT 192, 143 - Y
  810 DRAW 7 - Y, 0
- 820 PLOT 184, Y + 40
+ 820 PLOT 184, 135 - Y
  830 DRAW 7 - Y, 0
- 840 NEXT Y</script>
+ 840 NEXT Y
+ 
+ 1000 REM Sinclair
+ 1010 INK 2: BRIGHT 0
+ 1020 LET Y = 143: LET thickness = 3
+ 1030 LET X = 52
+ 1040 READ dots
+ 1050 IF dots = -1 THEN GOTO 1150
+ 1060 IF dots = 0 THEN GOTO 1100
+ 1070 FOR y2 = Y TO Y - thickness + 1 STEP -1
+ 1080 PLOT X, y2: DRAW dots - 1, 0
+ 1090 NEXT y2
+ 1100 LET X = X + dots
+ 1110 READ space
+ 1120 IF space = -1 THEN GOTO 1150
+ 1130 LET X = X + space
+ 1140 GOTO 1040
+ 1150 LET Y = Y - thickness
+ 1160 LET thickness = 4 - thickness
+ 1170 IF Y >= 129 THEN GOTO 1030
+ 1180 DATA 0, 16, 3, 33, 3, 17, 3, -1
+ 1190 DATA 0, 52, 3, -1
+ 1200 DATA 15, 1, 3, 1, 15, 1, 15, 1, 3, 1, 15, 1, 3, 1, 15, -1
+ 1210 DATA 3, 13, 3, 1, 3, 9, 3, 1, 3, 13, 3, 13, 3, 1, 3, 1, 3, -1
+ 1220 DATA 15, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 15, 1, 3, 1, 3, -1
+ 1230 DATA 0, 12, 3, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 3, 9, 3, 1, 3, 1, 3, -1
+ 1240 DATA 15, 1, 3, 1, 3, 9, 3, 1, 15, 1, 3, 1, 15, 1, 3, 1, 3, -1</script>
     </body>
 </html>

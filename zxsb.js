@@ -52,9 +52,12 @@
         return (offset & 0x00ff) | ((offset & 0x1800) >> 3);
     }
     
-    var getPointInfo = function(x, y) {
-        x &= 255;
-        y &= 255;
+    var getPointInfo = function(x, y, realSpectrumCoords) {
+        x = Math.round(x) & 255;
+        if (realSpectrumCoords) {
+            y = 175 - y;
+        }
+        y = Math.round(y) & 255;
         
         if (y > 191) return null;
         
@@ -272,9 +275,16 @@
         var currentPaper = 7;
         var currentBright = 0;
         var currentFlash = 0;
+        var currentOver = 0;
+        var currentInverse = 0;
         var currentAttrValue = 56;
         var lastPlotX = 0;
         var lastPlotY = 0;
+        var realSpectrumCoords = true;
+        
+        this['realSpectrumCoords'] = function(value) {
+            realSpectrumCoords = value ? 1 : 0;
+        };
         
         this['poke'] = function(address, value) {
             dataProxy[(address - 16384) & 0x1fff] = value & 255;
@@ -296,32 +306,35 @@
         };
         
         this['bright'] = function(b) {
-            currentBright = b & 1;
+            currentBright = b ? 1 : 0;
             currentAttrValue = currentAttrValue & 0xbf | (currentBright << 6);
         };
         
+        this['inverse'] = function(i) {
+            currentInverse = i ? 1 : 0;
+        };
+        
+        this['over'] = function(o) {
+            currentOver = o ? 1 : 0;
+        };
+        
         this['flash'] = function(f) {
-            currentFlash = f & 1;
+            currentFlash = f ? 1 : 0;
             currentAttrValue = currentAttrValue & 0x7f | (currentFlash << 7);
         };
         
         this['plot'] = function(x, y) {
-            var pointInfo = getPointInfo(x, y);
+            var pointInfo = getPointInfo(x, y, realSpectrumCoords);
             if (!pointInfo) return;
             
             dataProxy[pointInfo.attrIndex] = currentAttrValue;
-            dataProxy[pointInfo.bitmapIndex] |= pointInfo.bit;
-            
-            lastPlotX = x;
-            lastPlotY = y;
-        };
-        
-        this['unplot'] = function(x, y) {
-            var pointInfo = getPointInfo(x, y);
-            if (!pointInfo) return;
-            
-            dataProxy[pointInfo.attrIndex] = currentAttrValue;
-            dataProxy[pointInfo.bitmapIndex] &= (0xff ^ pointInfo.bit);
+            if (currentOver) {
+                dataProxy[pointInfo.bitmapIndex] ^= pointInfo.bit;
+            } else if (currentInverse) {
+                dataProxy[pointInfo.bitmapIndex] &= (255 - pointInfo.bit);
+            } else {
+                dataProxy[pointInfo.bitmapIndex] |= pointInfo.bit;
+            }
             
             lastPlotX = x;
             lastPlotY = y;
