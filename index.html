@@ -42,29 +42,12 @@
 250 REM      coordinate system
 260 REM   CSYS 0
 270 REM      Reversed fullscreen
-280 REN      coordinate system</textarea>
+280 REM      coordinate system</textarea>
         <br>
         <button id="run-instant">RUN INSTANT</button>
         <button id="run-fast">RUN FAST</button>
         <button id="run-slow">RUN SLOW</button>
         <br>
-        <!--
-        <button id="cls-test">CLS</button>
-        <button id="speed-test">Speed POKE</button>
-        <button id="plot-test">PLOT x 500</button>
-        <button id="line-test">LINE x 10</button>
-        <button id="logotype-test">Logotype</button>
-        <br>
-        <br>
-        <label for="ink">INK</label> <input type="number" min="0" max="7" value="0" id="ink"><br>
-        <label for="paper">PAPER</label> <input type="number" min="0" max="7" value="7" id="paper"><br>
-        <label for="bright">BRIGHT</label> <input type="number" min="0" max="1" value="0" id="bright"><br>
-        <label for="flash">FLASH</label> <input type="number" min="0" max="1" value="0" id="flash"><br>
-        <br>
-        <label for="poke-address">POKE</label> <input type="number" min="16384" max="23295" value="16384" id="poke-address">, <input type="number" min="0" max="255" value="0" id="poke-value"> <button id="poke">GO</button><br>
-        <label for="peek-address">PEEK</label> <input type="number" min="16384" max="23295" value="16384" id="peek-address"> <button id="peek">GO</button> <span class="output" id="peek-result">?</span><br>
-        <br>
-        -->
         <label for="save-filename">SAVE</label> "<input type="text" maxlength="10" style="width:10.5em" id="save-filename" value="javascript">" SCREEN$ <button id="save">GO</button><br>
         <br>
         <script>
@@ -99,208 +82,6 @@
                         document.getElementById('source-code').value = script.textContent;
                     }
                 });
-            });
-            
-            /*
-            var intervalId;
-            function stopInterval() {
-                if (intervalId) {
-                    window.clearInterval(intervalId);
-                    intervalId = null;
-                }
-            }
-            
-            document.getElementById('speed-test').addEventListener('click', function() {
-                stopInterval();
-                intervalId = window.setInterval(function() {
-                    var time = (performance.now() % 31415) / 100;
-                    for (var i = time; i < time + 10; i += 0.01) {
-                        var radius = 50 + Math.sin(i * 0.25) * 37;
-                        
-                        var x = 128 + radius * Math.sin(i * i * 2);
-                        var y = 96 + radius * Math.cos(i * i * 2);
-                        
-                        var pointInfo = ZX.Spectrum.Bitmap.getPointInfo(x, y);
-                        bitmap.poke(pointInfo.bitmapAddress, bitmap.peek(pointInfo.bitmapAddress) | pointInfo.bit);
-                        bitmap.poke(pointInfo.attrAddress, 56);
-                    }
-                    
-                    for (var i = 0; i < 50; ++i) {
-                        var address = 16384 + (Math.random() * 6144) | 0;
-                        var data = bitmap.peek(address) ^ ((Math.random() * 256) | 0);
-                        
-                        bitmap.poke(address, data);
-                    }
-                    
-                    for (var i = 0; i < 10; ++i) {
-                        var address = 16384 + 6144 + (Math.random() * 768) | 0;
-                        var data = bitmap.peek(address) ^ ((Math.random() * 256) | 0);
-                        
-                        bitmap.poke(address, data);
-                    }
-                }, 1);
-            });
-            
-            document.getElementById('plot-test').addEventListener('click', function() {
-                stopInterval();
-                for (var i = 0; i < 500; ++i) {
-                    var x = Math.random() * 256;
-                    var y = Math.random() * 192;
-                    bitmap.plot(x, y);
-                }
-            });
-            
-            document.getElementById('line-test').addEventListener('click', function() {
-                stopInterval();
-                for (var i = 0; i < 10; ++i) {
-                    var x1 = Math.random() * 256;
-                    var y1 = Math.random() * 192;
-                    var x2 = Math.random() * 256;
-                    var y2 = Math.random() * 192;
-                    bitmap.line(x1, y1, x2, y2);
-                }
-            });
-            
-            document.getElementById('cls-test').addEventListener('click', function() {
-                stopInterval();
-                bitmap.cls();
-            });
-            
-            document.getElementById('logotype-test').addEventListener('click', function() {
-                var i, x, y;
-                
-                stopInterval();
-                bitmap.paper(7);
-                bitmap.ink(0);
-                bitmap.flash(0);
-                bitmap.bright(0);
-                bitmap.cls();
-                
-                for (var x = 6; x <= 25; ++x) {
-                    for (y = 4; y <= 19; ++y) {
-                        bitmap.poke(16384 + 6144 + 32 * y + x, (y <= 5) ? 64 : 120);
-                    }
-                }
-                
-                bitmap.line(47, 31, 208, 31);
-                bitmap.line(47, 31, 47, 160);
-                bitmap.line(208, 31, 208, 160);
-                bitmap.line(47, 160, 208, 160);
-                
-                bitmap.bright(1);
-                bitmap.line(48, 48, 207, 48);
-                
-                bitmap.bright(1);
-                bitmap.paper(0);
-                bitmap.ink(2);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(168 - y, y + 32, 167, y + 32);
-                    bitmap.line(160 - y, y + 40, 159, y + 40);
-                }
-                
-                bitmap.paper(2);
-                bitmap.ink(6);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(176 - y, y + 32, 175, y + 32);
-                    bitmap.line(168 - y, y + 40, 167, y + 40);
-                }
-                
-                bitmap.paper(6);
-                bitmap.ink(4);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(184 - y, y + 32, 183, y + 32);
-                    bitmap.line(176 - y, y + 40, 175, y + 40);
-                }
-                
-                bitmap.paper(4);
-                bitmap.ink(5);
-                for (y = 1; y <= 7; ++y) {
-                    bitmap.line(192 - y, y + 32, 191, y + 32);
-                    bitmap.line(184 - y, y + 40, 183, y + 40);
-                }
-                
-                bitmap.paper(0);
-                bitmap.ink(5);
-                for (y = 0; y <= 7; ++y) {
-                    bitmap.line(192, y + 32, 199 - y, y + 32);
-                    bitmap.line(184, y + 40, 191 - y, y + 40);
-                }
-                
-                bitmap.ink(2);
-                bitmap.bright(0);
-                var lines = [
-                    [0, 16, 3, 33, 3, 17, 3],
-                    [0, 52, 3],
-                    [15, 1, 3, 1, 15, 1, 15, 1, 3, 1, 15, 1, 3, 1, 15],
-                    [3, 13, 3, 1, 3, 9, 3, 1, 3, 13, 3, 13, 3, 1, 3, 1, 3],
-                    [15, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 15, 1, 3, 1, 3],
-                    [0, 12, 3, 1, 3, 1, 3, 9, 3, 1, 3, 13, 3, 1, 3, 9, 3, 1, 3, 1, 3],
-                    [15, 1, 3, 1, 3, 9, 3, 1, 15, 1, 3, 1, 15, 1, 3, 1, 3]
-                ];
-                for (y = 32; y <= 46; ++y) {
-                    var line = lines[(((y % 4) == 3) ? (y >> 1) : (y >> 2) << 1) - 16];
-                    x = 52;
-                    for (i = 0; i < line.length; i += 2) {
-                        if (line[i]) {
-                            bitmap.line(x, y, x + line[i] - 1, y);
-                        }
-                        x += (line[i] + line[i + 1]);
-                    }
-                }
-                
-                bitmap.paper(7);
-                bitmap.bright(0);
-                for (i = 0; i <= 125; i += 5) {
-                    bitmap.ink(1);
-                    bitmap.line(i, 0, 0, 125 - i);
-                    bitmap.ink(2);
-                    bitmap.line(255 - i, 191, 255, i + 66);
-                }
-                
-                bitmap.ink(3);
-                bitmap.bright(1);
-                i = 0;
-                var liner = function() {
-                    x = 128 + 30 * Math.sin(i / 100) + 20 * Math.sin(i / 31 + 1);
-                    y = 106 + 30 * Math.cos(i / 100) + 20 * Math.cos(i / 43 + 1);
-                    bitmap.plot(x, y);
-                    
-                    ++i;
-                    if (i < 1200) {
-                        window.setTimeout(liner, 1);
-                    } else {
-                        bitmap.ink(document.getElementById('ink').value);
-                        bitmap.paper(document.getElementById('paper').value);
-                        bitmap.bright(document.getElementById('bright').value);
-                        bitmap.flash(document.getElementById('flash').value);
-                    }
-                };
-                
-                liner();
-            });
-            
-            document.getElementById('ink').addEventListener('change', function() {
-                bitmap.ink(this.value);
-            });
-            
-            document.getElementById('paper').addEventListener('change', function() {
-                bitmap.paper(this.value);
-            });
-            
-            document.getElementById('bright').addEventListener('change', function() {
-                bitmap.bright(this.value);
-            });
-            
-            document.getElementById('flash').addEventListener('change', function() {
-                bitmap.flash(this.value);
-            });
-            
-            document.getElementById('poke').addEventListener('click', function() {
-                bitmap.poke(document.getElementById('poke-address').value, document.getElementById('poke-value').value);
-            });
-            
-            document.getElementById('peek').addEventListener('click', function() {
-                document.getElementById('peek-result').textContent = bitmap.peek(document.getElementById('peek-address'));
             });
             
             document.getElementById('save').addEventListener('click', function() {
@@ -345,12 +126,14 @@
                     link.addEventListener('click', function() {
                         window.setTimeout(function() {
                             link.parentNode.removeChild(link);
-                        }, 1000);
+                        }, 10);
                     });
                     this.parentNode.insertBefore(link, this.nextSibling);
+                    window.setTimeout(function() {
+                        link.click();
+                    }, 10);
                 }
             });
-            */
         </script>
 
         <script type="text/x-zx-spectrum-basic" id="demo-random" title="Random">10 PAPER 0: INK 1: BRIGHT 1: CLS: CSYS 0
@@ -434,6 +217,26 @@
 670 PLOT 56,140:  DRAW -56,28 
 680 PLOT 71,140:  DRAW -70,35 
 690 INVERSE 0: PAPER 0: INK 7</script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-colour-wheel" title="Colour wheel"> 10 PAPER 7: INK 0: CSYS 1: BRIGHT 1: FLASH 0: CLS
+
+100 FOR O = -10 TO 10
+110 FOR H = 1 TO 12
+120 INK H / 2 + 0.5
+130 LET A = (H + O * 0.037) * 3.14159265358979 / 6
+140 LET DX = SIN A: LET DY = COS A
+150 PLOT 127 + 70 * DX, 83 + 70 * DY
+160 DRAW 10 * DX, 10 * DY
+170 NEXT H
+180 NEXT O
+
+200 LET X = 127: LET Y = 83
+210 FOR A = 1 TO 300 STEP 0.1
+220 LET X2 = 127 + A / 5 * SIN(A / 10)
+230 LET Y2 = 83 + A / 5 * COS(A / 10)
+240 INK A / 50 + 0.5: PLOT X, Y: DRAW X2 - X, Y2 - Y
+250 LET X = X2: LET Y = Y2
+260 NEXT A</script>
         
         <script type="text/x-zx-spectrum-basic" id="demo-logo" title="Logotype">  10 REM Clear screen and set up background colours
   20 PAPER 7: INK 0: FLASH 0: BRIGHT 0: CLS: CSYS 1
