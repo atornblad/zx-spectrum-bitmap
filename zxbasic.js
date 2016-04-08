@@ -22,7 +22,7 @@
     
     var Basic = Spectrum['Basic'] = Spectrum['Basic'] || {};
     
-    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|[-=<>+*\/)()])|([a-z][a-z0-9]*)|(,|;)/gi;
+    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|TAN|ASN|ACS|ATN|SQR|EXP|LN|SGN|ABS|INT|BIN|[-=<>+*\/)()])|([a-z][a-z0-9]*)|(,|;)/gi;
     var NUMBER_TOKEN = 1,
         RESERVED_WORD_TOKEN = 8,
         OPERATOR_TOKEN = 9,
@@ -319,12 +319,23 @@
         "<=" : 1,
         ">" : 1,
         ">=" : 1,
-        "SIN" : 5,
-        "COS" : 5,
         "+" : 3,
         "-" : 3,
         "*" : 4,
-        "/" : 4
+        "/" : 4,
+        "SIN" : 5,
+        "COS" : 5,
+        "TAN" : 5,
+        "ASN" : 5,
+        "ACS" : 5,
+        "ATN" : 5,
+        "SQR" : 5,
+        "EXP" : 5,
+        "LN" : 5,
+        "SGN" : 5,
+        "INT" : 5,
+        "ABS" : 5,
+        "BIN" : 5
     };
     
     var getTokenPriority = function(token) {
@@ -388,6 +399,28 @@
                 }
             }
             
+            if (latestNode.token.type == NUMBER_TOKEN && current.type == NUMBER_TOKEN && current.value.match(/^[-+]/)) {
+                // Special case where two numbers are directly after each other, and the second number contains a leading - or +
+                // Examples:   2+3
+                //             2 +3
+                //             2-3
+                //             2 -3
+                // These should be interpreted as additions and subtractions
+                var sign = current.value.substr(0, 1);
+                current.value = current.value.substr(1);
+                var newLatest = {
+                    token : { type : OPERATOR_TOKEN, value : sign },
+                    priority :  operatorPriorities[sign],
+                    left : latestNode,
+                    right : null,
+                    parent : latestNode.parent
+                };
+                if (latestNode.parent.left === latestNode) latestNode.parent.left = newLatest;
+                if (latestNode.parent.right === latestNode) latestNode.parent.right = newLatest;
+                latestNode = newLatest;
+                targetParent = newLatest;
+            }
+            
             var currentPriority = getTokenPriority(current);
             
             while (targetParent && (targetParent.priority >= currentPriority) && targetParent.parent && targetParent.parent.priority != '(') {
@@ -402,6 +435,8 @@
                 parent : targetParent
             };
         }
+        
+        console.log(log(root));
         
         return root;
     };
@@ -432,6 +467,27 @@
                             return Math.sin(evaluateExpressionNode.call(this, node.right));
                         case 'COS':
                             return Math.cos(evaluateExpressionNode.call(this, node.right));
+                        case 'TAN':
+                            return Math.tan(evaluateExpressionNode.call(this, node.right));
+                        case 'ASN':
+                            return Math.asin(evaluateExpressionNode.call(this, node.right));
+                        case 'ACS':
+                            return Math.acos(evaluateExpressionNode.call(this, node.right));
+                        case 'ATN':
+                            return Math.atan(evaluateExpressionNode.call(this, node.right));
+                        case 'SQR':
+                            return Math.sqrt(evaluateExpressionNode.call(this, node.right));
+                        case 'ABS':
+                            return Math.abs(evaluateExpressionNode.call(this, node.right));
+                        case 'INT':
+                            return Math.floor(evaluateExpressionNode.call(this, node.right));
+                        case 'EXP':
+                            return Math.pow(Math.E, evaluateExpressionNode.call(this, node.right));
+                        case 'LN':
+                            return Math.log(evaluateExpressionNode.call(this, node.right));
+                        case 'SGN':
+                            var temp = evaluateExpressionNode.call(this, node.right);
+                            return (temp < 0) ? -1 : (temp > 0) ? 1 : 0;
                         case '+':
                             return evaluateExpressionNode.call(this, node.left) +
                                    evaluateExpressionNode.call(this, node.right);
@@ -444,12 +500,15 @@
                         case '/':
                             return evaluateExpressionNode.call(this, node.left) /
                                    evaluateExpressionNode.call(this, node.right);
+                        default:
+                            throw "Unknown operator " + node.token.value.toUpperCase();
                     }
-                    break;
                 case IDENTIFIER_TOKEN:
                     var identifier = node.token.value.toUpperCase();
                     if (identifier == "RND") {
                         return Math.random();
+                    } else if (identifier == "PI") {
+                        return Math.PI;
                     } else if (identifier in this.variables) {
                         return this.variables[identifier];
                     } else {
@@ -550,9 +609,9 @@
             conditionTokens = groupExpressions.call(this, conditionTokens, false);
             var conditionValue = evaluateNumber.call(this, conditionTokens[0]);
             if (conditionValue != 0 && newLineOfCode) {
-                return runOneLine(newLineOfCode);
+                return runOneLine.call(this, newLineOfCode);
             } else {
-                return null;
+                return { skip_to_next_line : true };
             }
         } else {
             var letOrFor = (commandName == 'let' || commandName == 'for');
@@ -598,10 +657,10 @@
             code : code,
             len : code.length,
             currentIndex : 0,
-            variables : {},
-            for_loops : {},
+            variables : { },
+            for_loops : { },
             goto_line : null,
-            return_stack : []
+            return_stack : [ ]
         };
         
         var scrollErrorPartUpOneLine = function() {
@@ -653,10 +712,11 @@
         };
         
         var stepFunc = function() {
+            var nextLineFeed;
             do {
                 if (runtime.currentIndex >= runtime.len) return false;
                 
-                var nextLineFeed = runtime.code.indexOf('\n', runtime.currentIndex);
+                nextLineFeed = runtime.code.indexOf('\n', runtime.currentIndex);
                 var nextColon = runtime.code.indexOf(':', runtime.currentIndex);
                 var nextStop;
                 
@@ -705,6 +765,8 @@
                 result.for_loop.first_statement_index = nextStop + 1;
                 runtime.for_loops[result.for_loop.identifier] = result.for_loop;
                 runtime.currentIndex = nextStop + 1;
+            } else if (result.skip_to_next_line) {
+                runtime.currentIndex = nextLineFeed + 1;
             }
             
             return true;
