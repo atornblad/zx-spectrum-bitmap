@@ -21,7 +21,7 @@
  20 REM of the RUN buttons.
  30 REM
  40 REM Supported commands:
- 50 REM   LET, FOR, NEXT, GOTO, GOSUB, RETURN, STOP, INK, PAPER,
+ 50 REM   LET, FOR, NEXT, GO TO, GO SUB, RETURN, STOP, INK, PAPER,
  60 REM   OVER, INVERSE, FLASH, BRIGHT, PLOT, DRAW, CLS, POKE, PEEK,
  70 REM   READ, DATA
  80 REM
@@ -194,7 +194,7 @@
 390 PLOT X + 1, Y + 1: DRAW X2 - X, Y2 - Y
 400 LET X = X2: LET Y = Y2
 410 LET A = A + 5 - A / 100
-420 IF A < 300 THEN GOTO 330</script>
+420 IF A < 300 THEN GO TO 330</script>
         
         <script type="text/x-zx-spectrum-basic" id="demo-logo" title="Logotype" data-filename="logotype">  10 REM Clear screen and set up background colours
   20 CLS
@@ -265,19 +265,19 @@
  1020 LET Y = 143: LET thickness = 3
  1030 LET X = 52
  1040 READ dots
- 1050 IF dots = -1 THEN GOTO 1150
- 1060 IF dots = 0 THEN GOTO 1100
+ 1050 IF dots = -1 THEN GO TO 1150
+ 1060 IF dots = 0 THEN GO TO 1100
  1070 FOR y2 = Y TO Y - thickness + 1 STEP -1
  1080 PLOT X, y2: DRAW dots - 1, 0
  1090 NEXT y2
  1100 LET X = X + dots
  1110 READ space
- 1120 IF space = -1 THEN GOTO 1150
+ 1120 IF space = -1 THEN GO TO 1150
  1130 LET X = X + space
- 1140 GOTO 1040
+ 1140 GO TO 1040
  1150 LET Y = Y - thickness
  1160 LET thickness = 4 - thickness
- 1170 IF Y >= 129 THEN GOTO 1030
+ 1170 IF Y >= 129 THEN GO TO 1030
  1180 DATA 0, 16, 3, 33, 3, 17, 3, -1
  1190 DATA 0, 52, 3, -1
  1200 DATA 15, 1, 3, 1, 15, 1, 15, 1, 3, 1, 15, 1, 3, 1, 15, -1
@@ -306,7 +306,7 @@
 130 DRAW X2 - 127, Y2 - 80
 140 DRAW X1 - X2, Y1 - Y2
 150 LET I = I + W
-160 IF D = 0 THEN GOTO 30</script>
+160 IF D = 0 THEN GO TO 30</script>
         <script type="text/x-zx-spectrum-basic" id="demo-union-jack" title="Union Jack" data-filename="union-jack">  1 REM Slightly adapted from original
  
  10 LET r=2: LET w=7: LET b=1
