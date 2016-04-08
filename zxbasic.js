@@ -22,7 +22,7 @@
     
     var Basic = Spectrum['Basic'] = Spectrum['Basic'] || {};
     
-    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|TAN|ASN|ACS|ATN|SQR|EXP|LN|SGN|ABS|INT|BIN|[-=<>+*\/)()])|([a-z][a-z0-9]*)|(,|;)/gi;
+    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|TAN|ASN|ACS|ATN|SQR|EXP|LN|SGN|ABS|INT|BIN|PEEK|[-=<>+*\/)()])|([a-z][a-z0-9]*)|(,|;)/gi;
     var NUMBER_TOKEN = 1,
         RESERVED_WORD_TOKEN = 8,
         OPERATOR_TOKEN = 9,
@@ -335,7 +335,8 @@
         "SGN" : 5,
         "INT" : 5,
         "ABS" : 5,
-        "BIN" : 5
+        "BIN" : 5,
+        "PEEK" : 5
     };
     
     var getTokenPriority = function(token) {
@@ -441,6 +442,18 @@
         return root;
     };
     
+    var intToBin = function(value) {
+        var text = value.toString();
+        var result = 0;
+        var adder = 1;
+        for (var i = text.length - 1; i >= 0; --i) {
+            var isOne = text.substr(i, 1) == '1';
+            if (isOne) result += adder;
+            adder <<= 1;
+        }
+        return result;
+    };
+    
     var evaluateExpressionNode = function(node) {
         if (!node) return 0;
         
@@ -488,6 +501,12 @@
                         case 'SGN':
                             var temp = evaluateExpressionNode.call(this, node.right);
                             return (temp < 0) ? -1 : (temp > 0) ? 1 : 0;
+                        case 'PEEK':
+                            var addr = evaluateExpressionNode.call(this, node.right);
+                            return ZX.Spectrum.currentBitmap.peek(addr);
+                        case 'BIN':
+                            var temp = evaluateExpressionNode.call(this, node.right);
+                            return intToBin(temp);
                         case '+':
                             return evaluateExpressionNode.call(this, node.left) +
                                    evaluateExpressionNode.call(this, node.right);
