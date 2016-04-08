@@ -22,12 +22,12 @@
     
     var Basic = Spectrum['Basic'] = Spectrum['Basic'] || {};
     
-    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|TAN|ASN|ACS|ATN|SQR|EXP|LN|SGN|ABS|INT|BIN|PEEK|[-=<>+*\/)()])|([a-z][a-z0-9]*)|(,|;)/gi;
+    var tokensPattern = /([-+]?((\.\d+)|(\d+(\.\d+)?))(E([-+]?)\d+)?)|(TO|STEP|THEN)|(<=|>=|<>|\*\*|SIN|COS|TAN|ASN|ACS|ATN|SQR|EXP|LN|SGN|ABS|INT|BIN|PEEK|[-=<>+*\/)()])|(GO\sTO|GO\sSUB|([a-z][a-z0-9]*))|(,|;)/gi;
     var NUMBER_TOKEN = 1,
         RESERVED_WORD_TOKEN = 8,
         OPERATOR_TOKEN = 9,
         IDENTIFIER_TOKEN = 10,
-        SEPARATOR_TOKEN = 11,
+        SEPARATOR_TOKEN = 12,
         EXPRESSION_TOKEN = 1000;
     
     var IGNORE_ARG = 0,
@@ -608,6 +608,7 @@
         // But for now, keep it simple
         
         var commandName = tokens[0].value.toLowerCase();
+        commandName = commandName.replace(' ', '');
         var command = commands[commandName];
         if (!command) {
             return { error : 'Unknown command: ' + commandName };
