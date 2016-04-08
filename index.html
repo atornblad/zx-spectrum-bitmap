@@ -17,39 +17,38 @@
             </select>
         </div>
         <div>
-        <textarea id="source-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"> 10 REM Type a ZX Sinclair
- 20 REM Spectrum BASIC program
- 30 REM and click one of the
- 40 REM RUN buttons.
- 50 REM
- 60 REM Supported commands:
- 70 REM   LET, FOR, NEXT, GOTO,
- 80 REM   GOSUB, RETURN, STOP,
- 90 REM   INK, PAPER, OVER,
-100 REM   INVERSE, FLASH,
-110 REM   BRIGHT, PLOT, DRAW,
-120 REM   CLS, POKE, PEEK,
-130 REM   READ, DATA
-140 REM
-150 REM Supported functions:
-160 REM   SIN, COS, TAN, ASN,
-170 REM   ACS, ATN, SGN, INT,
-180 REM   SQR, EXP, LN, ABS
-140 REM
-150 REM Not supported:
-160 REM   Strings
-170 REM   Attributed PLOT/DRAW
-180 REM   Keyboard interaction
-190 REM   Pausing / timing
-200 REM   Sound
-210 REM
-220 REM Added commands:
-230 REM   CSYS 1
-240 REM      Normal ZX Spectrum
-250 REM      coordinate system
-260 REM   CSYS 0
-270 REM      Reversed fullscreen
-280 REM      coordinate system</textarea>
+        <textarea id="source-code" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"> 10 REM Type a ZX Sinclair Spectrum BASIC program and click one
+ 20 REM of the RUN buttons.
+ 30 REM
+ 40 REM Supported commands:
+ 50 REM   LET, FOR, NEXT, GOTO, GOSUB, RETURN, STOP, INK, PAPER,
+ 60 REM   OVER, INVERSE, FLASH, BRIGHT, PLOT, DRAW, CLS, POKE, PEEK,
+ 70 REM   READ, DATA
+ 80 REM
+ 90 REM Supported functions:
+100 REM   SIN, COS, TAN, ASN, ACS, ATN, SGN, INT, SQR, EXP, LN, ABS
+110 REM
+120 REM Not supported:
+130 REM   Strings
+140 REM   Attributed PLOT/DRAW
+150 REM   Keyboard interaction
+160 REM   Pausing / timing
+170 REM   Sound
+180 REM
+190 REM Added commands:
+200 REM   CSYS 1
+210 REM      Normal ZX Spectrum coordinate system
+220 REM   CSYS 0
+230 REM      Reversed fullscreen coordinate system
+240 REM
+250 REM When you click a RUN button, all attributes are reset to:
+260 REM   INK 0
+270 REM   PAPER 7
+280 REM   BRIGHT 0
+290 REM   FLASH 0
+300 REM   OVER 0
+310 REM   INVERSE 0
+320 REM   CSYS 1</textarea>
         </div>
         <div>
             <button id="run-instant">RUN VERY FAST</button>
@@ -156,7 +155,18 @@
                 }
             });
         </script>
+        
+        <script type="text/x-zx-spectrum-basic" id="demo-binary" title="Binary" data-filename="binary">10 CLS
 
+20 LET ADDR = 16384
+30 FOR I = 1 TO 8
+40 READ X
+50 POKE ADDR, X
+60 LET ADDR = ADDR + 256
+70 NEXT I
+
+80 DATA BIN 00000000, BIN 00000000, BIN 00000010, BIN 00111100
+90 DATA BIN 01010100, BIN 00010100, BIN 00010100, BIN 00000000</script>
         <script type="text/x-zx-spectrum-basic" id="demo-colour-wheel" title="Colour wheel" data-filename="colorwheel"> 10 PAPER 0: INK 0: BRIGHT 1: CLS
 
 100 REM Coloured bands

@@ -13,7 +13,7 @@ input {
 
 textarea {
     width: 40em;
-    min-height: 8em;
+    min-height: 500px;
 }
 
 .output {
